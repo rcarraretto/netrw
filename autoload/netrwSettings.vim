@@ -221,7 +221,6 @@ endfun
 " ---------------------------------------------------------------------
 " NetrwSettingHelp: {{{2
 fun! NetrwSettingHelp()
-"  call Dfunc("NetrwSettingHelp()")
   let curline = getline(".")
   if curline =~ '='
    let varhelp = substitute(curline,'^\s*let ','','e')

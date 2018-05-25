@@ -107,12 +107,10 @@ fun! s:LocalBrowse(dirname)
   if !exists("s:vimentered")
    " If s:vimentered doesn't exist, then the VimEnter event hasn't fired.  It will,
    " and so s:VimEnter() will then be calling this routine, but this time with s:vimentered defined.
-"   call Dfunc("s:LocalBrowse(dirname<".a:dirname.">)  (s:vimentered doesn't exist)")
 "   call Dret("s:LocalBrowse")
    return
   endif
 
-"  call Dfunc("s:LocalBrowse(dirname<".a:dirname.">)  (s:vimentered=".s:vimentered.")")
 
   if has("amiga")
    " The check against '' is made for the Amiga, where the empty
@@ -154,7 +152,6 @@ endfun
 "             It also sets s:vimentered, letting s:LocalBrowse() know that s:VimEnter()
 "             has already been called.
 fun! s:VimEnter(dirname)
-"  call Dfunc("s:VimEnter(dirname<".a:dirname.">) expand(%)<".expand("%").">")
   let curwin       = winnr()
   let s:vimentered = 1
   windo call s:LocalBrowse(expand("%:p"))
@@ -185,13 +182,11 @@ fun! NetUserPass(...)
 
  " get/set userid
  if a:0 == 0
-"  call Dfunc("NetUserPass(a:0<".a:0.">)")
   if !exists("g:netrw_uid") || g:netrw_uid == ""
    " via prompt
    let g:netrw_uid= input('Enter username: ')
   endif
  else	" from command line
-"  call Dfunc("NetUserPass(a:1<".a:1.">) {")
   let g:netrw_uid= a:1
  endif
 

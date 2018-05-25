@@ -33,7 +33,6 @@ set cpo&vim
 " ---------------------------------------------------------------------
 " netrwFileHandlers#Invoke: {{{1
 fun! netrwFileHandlers#Invoke(exten,fname)
-"  call Dfunc("netrwFileHandlers#Invoke(exten<".a:exten."> fname<".a:fname.">)")
   let exten= a:exten
   " list of supported special characters.  Consider rcs,v --- that can be
   " supported with a NFH_rcsCOMMAv() handler
@@ -73,7 +72,6 @@ endfun
 " s:NFH_html: handles html when the user hits "x" when the {{{1
 "                        cursor is atop a *.html file
 fun! s:NFH_html(pagefile)
-"  call Dfunc("s:NFH_html(".a:pagefile.")")
 
   let page= substitute(a:pagefile,'^','file://','')
 
@@ -96,7 +94,6 @@ endfun
 " s:NFH_htm: handles html when the user hits "x" when the {{{1
 "                        cursor is atop a *.htm file
 fun! s:NFH_htm(pagefile)
-"  call Dfunc("s:NFH_htm(".a:pagefile.")")
 
   let page= substitute(a:pagefile,'^','file://','')
 
@@ -118,7 +115,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_jpg: {{{1
 fun! s:NFH_jpg(jpgfile)
-"  call Dfunc("s:NFH_jpg(jpgfile<".a:jpgfile.">)")
 
   if executable("gimp")
    exe "silent! !gimp -s ".shellescape(a:jpgfile,1)
@@ -137,7 +133,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_gif: {{{1
 fun! s:NFH_gif(giffile)
-"  call Dfunc("s:NFH_gif(giffile<".a:giffile.">)")
 
   if executable("gimp")
    exe "silent! !gimp -s ".shellescape(a:giffile,1)
@@ -155,7 +150,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_png: {{{1
 fun! s:NFH_png(pngfile)
-"  call Dfunc("s:NFH_png(pngfile<".a:pngfile.">)")
 
   if executable("gimp")
    exe "silent! !gimp -s ".shellescape(a:pngfile,1)
@@ -173,7 +167,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_pnm: {{{1
 fun! s:NFH_pnm(pnmfile)
-"  call Dfunc("s:NFH_pnm(pnmfile<".a:pnmfile.">)")
 
   if executable("gimp")
    exe "silent! !gimp -s ".shellescape(a:pnmfile,1)
@@ -191,7 +184,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_bmp: visualize bmp files {{{1
 fun! s:NFH_bmp(bmpfile)
-"  call Dfunc("s:NFH_bmp(bmpfile<".a:bmpfile.">)")
 
   if executable("gimp")
    exe "silent! !gimp -s ".a:bmpfile
@@ -209,7 +201,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_pdf: visualize pdf files {{{1
 fun! s:NFH_pdf(pdf)
-"  call Dfunc("s:NFH_pdf(pdf<".a:pdf.">)")
   if executable("gs")
    exe 'silent! !gs '.shellescape(a:pdf,1)
   elseif executable("pdftotext")
@@ -226,7 +217,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_doc: visualize doc files {{{1
 fun! s:NFH_doc(doc)
-"  call Dfunc("s:NFH_doc(doc<".a:doc.">)")
 
   if executable("oowriter")
    exe 'silent! !oowriter '.shellescape(a:doc,1)
@@ -243,7 +233,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_sxw: visualize sxw files {{{1
 fun! s:NFH_sxw(sxw)
-"  call Dfunc("s:NFH_sxw(sxw<".a:sxw.">)")
 
   if executable("oowriter")
    exe 'silent! !oowriter '.shellescape(a:sxw,1)
@@ -260,7 +249,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_xls: visualize xls files {{{1
 fun! s:NFH_xls(xls)
-"  call Dfunc("s:NFH_xls(xls<".a:xls.">)")
 
   if executable("oocalc")
    exe 'silent! !oocalc '.shellescape(a:xls,1)
@@ -277,7 +265,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_ps: handles PostScript files {{{1
 fun! s:NFH_ps(ps)
-"  call Dfunc("s:NFH_ps(ps<".a:ps.">)")
   if executable("gs")
 "   call Decho("exe silent! !gs ".a:ps)
    exe "silent! !gs ".shellescape(a:ps,1)
@@ -302,7 +289,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_eps: handles encapsulated PostScript files {{{1
 fun! s:NFH_eps(eps)
-"  call Dfunc("s:NFH_eps()")
   if executable("gs")
    exe "silent! !gs ".shellescape(a:eps,1)
    redraw!
@@ -326,7 +312,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_fig: handles xfig files {{{1
 fun! s:NFH_fig(fig)
-"  call Dfunc("s:NFH_fig()")
   if executable("xfig")
    exe "silent! !xfig ".a:fig
    redraw!
@@ -342,7 +327,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NFH_obj: handles tgif's obj files {{{1
 fun! s:NFH_obj(obj)
-"  call Dfunc("s:NFH_obj()")
   if has("unix") && executable("tgif")
    exe "silent! !tgif ".a:obj
    redraw!
