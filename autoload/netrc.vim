@@ -3257,14 +3257,9 @@ fun! s:NetrwBrowse(islocal,dirname)
    let b:netrw_curdir= b:netrw_curdir."/"
   endif
   if b:netrw_curdir == ''
-   if has("amiga")
-    " On the Amiga, the empty string connotes the current directory
-    let b:netrw_curdir= getcwd()
-   else
     " under unix, when the root directory is encountered, the result
     " from the preceding substitute is an empty string.
     let b:netrw_curdir= '/'
-   endif
   endif
   if !a:islocal && b:netrw_curdir !~ '/$'
    let b:netrw_curdir= b:netrw_curdir.'/'
@@ -3950,11 +3945,7 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
   endif
 
   " set up o/s-dependent directory recognition pattern
-  if has("amiga")
-   let dirpat= '[\/:]$'
-  else
-   let dirpat= '[\/]$'
-  endif
+  let dirpat= '[\/]$'
 
   if dirname !~ dirpat
    " apparently vim is "recognizing" that it is in a directory and
@@ -4103,16 +4094,7 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
     NetrwKeepj %d _
    endif
 
-   if has("amiga")
-    " amiga
-    if a:islocal
-     let dirname= substitute(dirname,'^\(.*[/:]\)\([^/]\+$\)','\1','')
-     let dirname= substitute(dirname,'/$','','')
-    else
-     let dirname= substitute(dirname,'^\(.*[/:]\)\([^/]\+/$\)','\1','')
-    endif
-
-   elseif !g:netrw_cygwin && (has("win32") || has("win95") || has("win64") || has("win16"))
+   if !g:netrw_cygwin && (has("win32") || has("win95") || has("win64") || has("win16"))
     " windows
     if a:islocal
      let dirname= substitute(dirname,'^\(.*\)/\([^/]\+\)/$','\1','')
@@ -9487,16 +9469,7 @@ endfun
 "  s:ComposePath: Appends a new part to a path taking different systems into consideration {{{2
 fun! s:ComposePath(base,subdir)
 
-  if has("amiga")
-   let ec = a:base[s:Strlen(a:base)-1]
-   if ec != '/' && ec != ':'
-    let ret = a:base."/" . a:subdir
-   else
-    let ret = a:base.a:subdir
-   endif
-
-   " COMBAK: test on windows with changing to root directory: :e C:/
-  elseif a:subdir =~ '^\a:[/\\]\([^/\\]\|$\)' && (has("win32") || has("win95") || has("win64") || has("win16"))
+  if a:subdir =~ '^\a:[/\\]\([^/\\]\|$\)' && (has("win32") || has("win95") || has("win64") || has("win16"))
    let ret= a:subdir
 
   elseif a:base =~ '^\a:[/\\]\([^/\\]\|$\)' && (has("win32") || has("win95") || has("win64") || has("win16"))

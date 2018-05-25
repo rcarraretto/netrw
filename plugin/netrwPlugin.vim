@@ -105,28 +105,12 @@ fun! s:LocalBrowse(dirname)
    return
   endif
 
-
-  if has("amiga")
-   " The check against '' is made for the Amiga, where the empty
-   " string is the current directory and not checking would break
-   " things such as the help command.
-   if a:dirname != '' && isdirectory(a:dirname)
-    sil! call netrc#LocalBrowseCheck(a:dirname)
-    if exists("w:netrw_bannercnt") && line('.') < w:netrw_bannercnt
-     exe w:netrw_bannercnt
-    endif
-   endif
-
-  elseif isdirectory(a:dirname)
+  if isdirectory(a:dirname)
    sil! call netrc#LocalBrowseCheck(a:dirname)
    if exists("w:netrw_bannercnt") && line('.') < w:netrw_bannercnt
     exe w:netrw_bannercnt
    endif
-
-  else
-   " not a directory, ignore it
   endif
-
 endfun
 
 " ---------------------------------------------------------------------
