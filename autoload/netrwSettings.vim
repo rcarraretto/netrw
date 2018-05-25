@@ -225,7 +225,6 @@ fun! NetrwSettingHelp()
   if curline =~ '='
    let varhelp = substitute(curline,'^\s*let ','','e')
    let varhelp = substitute(varhelp,'\s*=.*$','','e')
-"   call Decho("trying help ".varhelp)
    try
     exe "he ".varhelp
    catch /^Vim\%((\a\+)\)\=:E149/

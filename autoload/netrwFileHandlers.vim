@@ -51,16 +51,13 @@ fun! netrwFileHandlers#Invoke(exten,fname)
 \   ';' : 'SEMICOLON',
 \   '~' : 'TILDE'}
    let exten= substitute(a:exten,'[@:,$!=\-+%?;~]','\=specials[submatch(0)]','ge')
-"   call Decho('fname<'.fname.'> done with dictionary')
   endif
 
   if a:exten != "" && exists("*NFH_".exten)
    " support user NFH_*() functions
-"   call Decho("let ret= netrwFileHandlers#NFH_".a:exten.'("'.fname.'")')
    exe "let ret= NFH_".exten.'("'.a:fname.'")'
   elseif a:exten != "" && exists("*s:NFH_".exten)
    " use builtin-NFH_*() functions
-"   call Decho("let ret= netrwFileHandlers#NFH_".a:exten.'("'.fname.'")')
    exe "let ret= s:NFH_".a:exten.'("'.a:fname.'")'
   endif
 
@@ -75,10 +72,8 @@ fun! s:NFH_html(pagefile)
   let page= substitute(a:pagefile,'^','file://','')
 
   if executable("mozilla")
-"   call Decho("executing !mozilla ".page)
    exe "!mozilla ".shellescape(page,1)
   elseif executable("netscape")
-"   call Decho("executing !netscape ".page)
    exe "!netscape ".shellescape(page,1)
   else
    return 0
@@ -95,10 +90,8 @@ fun! s:NFH_htm(pagefile)
   let page= substitute(a:pagefile,'^','file://','')
 
   if executable("mozilla")
-"   call Decho("executing !mozilla ".page)
    exe "!mozilla ".shellescape(page,1)
   elseif executable("netscape")
-"   call Decho("executing !netscape ".page)
    exe "!netscape ".shellescape(page,1)
   else
    return 0
@@ -114,7 +107,6 @@ fun! s:NFH_jpg(jpgfile)
   if executable("gimp")
    exe "silent! !gimp -s ".shellescape(a:jpgfile,1)
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
-"   call Decho("silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".escape(a:jpgfile," []|'"))
    exe "!".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:jpgfile,1)
   else
    return 0
@@ -243,15 +235,12 @@ endfun
 " s:NFH_ps: handles PostScript files {{{1
 fun! s:NFH_ps(ps)
   if executable("gs")
-"   call Decho("exe silent! !gs ".a:ps)
    exe "silent! !gs ".shellescape(a:ps,1)
    redraw!
   elseif executable("ghostscript")
-"   call Decho("exe silent! !ghostscript ".a:ps)
    exe "silent! !ghostscript ".shellescape(a:ps,1)
    redraw!
   elseif executable("gswin32")
-"   call Decho("exe silent! !gswin32 ".shellescape(a:ps,1))
    exe "silent! !gswin32 ".shellescape(a:ps,1)
    redraw!
   else

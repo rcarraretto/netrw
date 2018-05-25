@@ -115,7 +115,6 @@ fun! s:LocalBrowse(dirname)
    " The check against '' is made for the Amiga, where the empty
    " string is the current directory and not checking would break
    " things such as the help command.
-"   call Decho("(LocalBrowse) dirname<".a:dirname.">  (isdirectory, amiga)")
    if a:dirname != '' && isdirectory(a:dirname)
     sil! call netrc#LocalBrowseCheck(a:dirname)
     if exists("w:netrw_bannercnt") && line('.') < w:netrw_bannercnt
@@ -124,21 +123,15 @@ fun! s:LocalBrowse(dirname)
    endif
 
   elseif isdirectory(a:dirname)
-"   call Decho("(LocalBrowse) dirname<".a:dirname."> ft=".&ft."  (isdirectory, not amiga)")
 "   call Dredir("LocalBrowse ft last set: ","verbose set ft")
-"   call Decho("(s:LocalBrowse) COMBAK#23: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
    sil! call netrc#LocalBrowseCheck(a:dirname)
-"   call Decho("(s:LocalBrowse) COMBAK#24: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
    if exists("w:netrw_bannercnt") && line('.') < w:netrw_bannercnt
     exe w:netrw_bannercnt
-"    call Decho("(s:LocalBrowse) COMBAK#25: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
    endif
 
   else
    " not a directory, ignore it
-"   call Decho("(LocalBrowse) dirname<".a:dirname."> not a directory, ignoring...")
   endif
-"  call Decho("(s:LocalBrowse) COMBAK#26: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
 
 endfun
 
@@ -189,10 +182,8 @@ fun! NetUserPass(...)
 
  " get password
  if a:0 <= 1 " via prompt
-"  call Decho("a:0=".a:0." case <=1:")
   let g:netrw_passwd= inputsecret("Enter Password: ")
  else " from command line
-"  call Decho("a:0=".a:0." case >1: a:2<".a:2.">")
   let g:netrw_passwd=a:2
  endif
 endfun
