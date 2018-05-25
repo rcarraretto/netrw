@@ -452,7 +452,6 @@ if !exists("g:netrw_xstrlen")
  endif
 endif
 call s:NetrwInit("g:NetrwTopLvlMenu","Netrw.")
-call s:NetrwInit("g:netrw_win95ftp",1)
 call s:NetrwInit("g:netrw_winsize",50)
 call s:NetrwInit("g:netrw_wiw",1)
 if g:netrw_winsize > 100|let g:netrw_winsize= 100|endif
@@ -2321,11 +2320,6 @@ fun! s:NetrwGetFile(readcmd, tfile, method)
   " get name of remote filename (ie. url and all)
   let rfile= bufname("%")
 
-  if exists("*NetReadFixup")
-   " for the use of NetReadFixup (not otherwise used internally)
-   let line2= line("$")
-  endif
-
   if a:readcmd[0] == '%'
   " get file into buffer
 
@@ -2383,11 +2377,6 @@ fun! s:NetrwGetFile(readcmd, tfile, method)
    " not readable
    NetrwKeepj call netrc#ErrorMsg(s:WARNING,"file <".a:tfile."> not readable",9)
    return
-  endif
-
-  " User-provided (ie. optional) fix-it-up command
-  if exists("*NetReadFixup")
-   NetrwKeepj call NetReadFixup(a:method, line1, line2)
   endif
 
   if has("gui") && has("menu") && has("gui_running") && &go =~# 'm' && g:netrw_menu
@@ -2628,35 +2617,6 @@ fun! s:NetrwMethod(choice)
    let g:netrw_port= netrw_port
   endif
 endfun
-
-" ------------------------------------------------------------------------
-" NetReadFixup: this sort of function is typically written by the user {{{2
-"               to handle extra junk that their system's ftp dumps
-"               into the transfer.  This function is provided as an
-"               example and as a fix for a Windows 95 problem: in my
-"               experience, win95's ftp always dumped four blank lines
-"               at the end of the transfer.
-if has("win95") && exists("g:netrw_win95ftp") && g:netrw_win95ftp
- fun! NetReadFixup(method, line1, line2)
-
-   " sanity checks -- attempt to convert inputs to integers
-   let method = a:method + 0
-   let line1  = a:line1 + 0
-   let line2  = a:line2 + 0
-   if type(method) != 0 || type(line1) != 0 || type(line2) != 0 || method < 0 || line1 <= 0 || line2 <= 0
-    return
-   endif
-
-   if method == 3   " ftp (no <.netrc>)
-    let fourblanklines= line2 - 3
-    if fourblanklines >= line1
-     exe "sil NetrwKeepj ".fourblanklines.",".line2."g/^\s*$/d"
-     call histdel("/",-1)
-    endif
-   endif
-
- endfun
-endif
 
 " ---------------------------------------------------------------------
 " NetUserPass: set username and password for subsequent ftp transfer {{{2

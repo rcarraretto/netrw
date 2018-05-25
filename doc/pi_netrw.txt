@@ -446,10 +446,6 @@ settings are described below, in |netrw-browser-options|, and in
 			      messages don't always seem to show up this
 			      way, but one doesn't have to quit the window.
 
- *g:netrw_win95ftp*	=1 if using Win95, will remove four trailing blank
-			   lines that o/s's ftp "provides" on transfers
-			=0 force normal ftp behavior (no trailing line removal)
-
  *g:netrw_cygwin*	=1 assume scp under windows is from cygwin. Also
 			   permits network browsing to use ls with time and
 			   size sorting (default if windows)
@@ -823,8 +819,6 @@ set in the user's <.vimrc> file: (see also |netrw-settings| |netrw-protocol|)
         g:netrw_uid             Holds current user-id for ftp.
         g:netrw_use_nt_rcp      =0 don't use WinNT/2K/XP's rcp (default)
                                 =1 use WinNT/2K/XP's rcp, binary mode
-        g:netrw_win95ftp        =0 use unix-style ftp even if win95/98/ME/etc
-                                =1 use default method to do ftp >
 	-----------------------------------------------------------------------
 <
 						*netrw-internal-variables*
@@ -856,11 +850,6 @@ variables listed below, and may be modified by the user.
 <    netrw_ftp         variable    =doesn't exist  userid set by "user userid"
                                   =0              userid set by "user userid"
                                   =1              userid set by "userid"
-    NetReadFixup      function    =doesn't exist  no change
-                                  =exists         Allows user to have files
-                                                  read via ftp automatically
-                                                  transformed however they wish
-                                                  by NetReadFixup()
     g:netrw_dav_cmd      var   ="cadaver"      if cadaver  is executable
     g:netrw_dav_cmd      var   ="curl -o"      elseif curl is executable
     g:netrw_fetch_cmd    var   ="fetch -o"     if fetch is available
@@ -932,42 +921,6 @@ To handle the SSL certificate dialog for untrusted servers, one may pull
 down the certificate and place it into /usr/ssl/cert.pem.  This operation
 renders the server treatment as "trusted".
 
-						*netrw-fixup* *netreadfixup*
-If your ftp for whatever reason generates unwanted lines (such as AUTH
-messages) you may write a NetReadFixup() function:
->
-    function! NetReadFixup(method,line1,line2)
-      " a:line1: first new line in current file
-      " a:line2: last  new line in current file
-      if     a:method == 1 "rcp
-      elseif a:method == 2 "ftp + <.netrc>
-      elseif a:method == 3 "ftp + machine,uid,password,filename
-      elseif a:method == 4 "scp
-      elseif a:method == 5 "http/wget
-      elseif a:method == 6 "dav/cadaver
-      elseif a:method == 7 "rsync
-      elseif a:method == 8 "fetch
-      elseif a:method == 9 "sftp
-      else               " complain
-      endif
-    endfunction
->
-The NetReadFixup() function will be called if it exists and thus allows you to
-customize your reading process.  As a further example, <netrw.vim> contains
-just such a function to handle Windows 95 ftp.  For whatever reason, Windows
-95's ftp dumps four blank lines at the end of a transfer, and so it is
-desirable to automate their removal.  Here's some code taken from <netrw.vim>
-itself:
->
-    if has("win95") && g:netrw_win95ftp
-     fun! NetReadFixup(method, line1, line2)
-       if method == 3   " ftp (no <.netrc>)
-        let fourblanklines= line2 - 3
-        silent fourblanklines.",".line2."g/^\s*/d"
-       endif
-     endfunction
-    endif
->
 (Related topics: |ftp| |netrw-userpass| |netrw-start|)
 
 ==============================================================================
@@ -3359,14 +3312,6 @@ Example: Clear netrw's marked file list via a mapping on gu >
 
 	(This section is likely to grow as I get feedback)
 	(also see |netrw-debug|)
-								*netrw-p1*
-	P1. I use windows 95, and my ftp dumps four blank lines at the
-	    end of every read.
-
-		See |netrw-fixup|, and put the following into your
-		<.vimrc> file:
-
-			let g:netrw_win95ftp= 1
 
 								*netrw-p2*
 	P2. I use Windows, and my network browsing with ftp doesn't sort by
