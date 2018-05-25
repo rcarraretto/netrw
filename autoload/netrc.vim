@@ -258,9 +258,6 @@ let s:netrw_rcpmode    = ''
 " ---------------------------------------------------------------------
 " Default values for netrw's global variables {{{2
 " Cygwin Detection ------- {{{3
-if !exists("g:netrw_cygwin")
-  let g:netrw_cygwin= 0
-endif
 " Default values - a-c ---------- {{{3
 call s:NetrwInit("g:netrw_alto"        , &sb)
 call s:NetrwInit("g:netrw_altv"        , &spr)
@@ -277,7 +274,6 @@ endif
 call s:NetrwInit("g:netrw_cursor"      , 2)
 let s:netrw_usercul = &cursorline
 let s:netrw_usercuc = &cursorcolumn
-call s:NetrwInit("g:netrw_cygdrive","/cygdrive")
 " Default values - d-g ---------- {{{3
 call s:NetrwInit("s:didstarstar",0)
 call s:NetrwInit("g:netrw_dirhist_cnt"      , 0)
@@ -287,7 +283,7 @@ call s:NetrwInit("g:netrw_errorlvl"  , s:NOTE)
 call s:NetrwInit("g:netrw_fastbrowse"       , 1)
 call s:NetrwInit("g:netrw_ftp_browse_reject", '^total\s\+\d\+$\|^Trying\s\+\d\+.*$\|^KERBEROS_V\d rejected\|^Security extensions not\|No such file\|: connect to address [0-9a-fA-F:]*: No route to host$')
 if !exists("g:netrw_ftp_list_cmd")
- if has("unix") || (exists("g:netrw_cygwin") && g:netrw_cygwin)
+ if has("unix")
   let g:netrw_ftp_list_cmd     = "ls -lF"
   let g:netrw_ftp_timelist_cmd = "ls -tlF"
   let g:netrw_ftp_sizelist_cmd = "ls -slF"
@@ -393,7 +389,7 @@ call s:NetrwInit("g:netrw_menu"          , 1)
 call s:NetrwInit("g:netrw_mkdir_cmd"     , g:netrw_ssh_cmd." USEPORT HOSTNAME mkdir")
 call s:NetrwInit("g:netrw_mousemaps"     , (exists("+mouse") && &mouse =~# '[anh]'))
 call s:NetrwInit("g:netrw_retmap"        , 0)
-if has("unix") || (exists("g:netrw_cygwin") && g:netrw_cygwin)
+if has("unix")
  call s:NetrwInit("g:netrw_chgperm"       , "chmod PERM FILENAME")
 else
  call s:NetrwInit("g:netrw_chgperm"       , "chmod PERM FILENAME")
@@ -623,7 +619,7 @@ fun! netrc#Explore(indx,dosplit,style,...)
   NetrwKeepj norm! 0
 
   if a:0 > 0
-   if a:1 =~ '^\~' && (has("unix") || (exists("g:netrw_cygwin") && g:netrw_cygwin))
+   if a:1 =~ '^\~' && has("unix")
     let dirname= simplify(substitute(a:1,'\~',expand("$HOME"),''))
    elseif a:1 == '.'
     let dirname= simplify(exists("b:netrw_curdir")? b:netrw_curdir : getcwd())
@@ -1921,10 +1917,6 @@ fun! netrc#NetWrite(...) range
    " (line numbers don't really make sense for that).
    " Also supports the writing of tar and zip files.
    exe "sil NetrwKeepj w! ".fnameescape(v:cmdarg)." ".fnameescape(tmpfile)
-  elseif g:netrw_cygwin
-   " write (selected portion of) file to temporary
-   let cygtmpfile= substitute(tmpfile,g:netrw_cygdrive.'/\(.\)','\1:','')
-   exe "sil NetrwKeepj ".a:firstline."," . a:lastline . "w! ".fnameescape(v:cmdarg)." ".fnameescape(cygtmpfile)
   else
    " write (selected portion of) file to temporary
    exe "sil NetrwKeepj ".a:firstline."," . a:lastline . "w! ".fnameescape(v:cmdarg)." ".fnameescape(tmpfile)
@@ -2324,11 +2316,7 @@ fun! s:NetrwGetFile(readcmd, tfile, method)
   " get file into buffer
 
    " rename the current buffer to the temp file (ie. tfile)
-   if g:netrw_cygwin
-    let tfile= substitute(a:tfile,g:netrw_cygdrive.'/\(.\)','\1:','')
-   else
-    let tfile= a:tfile
-   endif
+   let tfile= a:tfile
    call s:NetrwBufRename(tfile)
 
    " edit temporary file (ie. read the temporary file in)
@@ -6469,10 +6457,6 @@ fun! s:NetrwMarkFileTgt(islocal)
    " simplify the target (eg. /abc/def/../ghi -> /abc/ghi)
    let s:netrwmftgt= simplify(s:netrwmftgt)
   endif
-  if g:netrw_cygwin
-   let s:netrwmftgt= substitute(system("cygpath ".s:ShellEscape(s:netrwmftgt)),'\n$','','')
-   let s:netrwmftgt= substitute(s:netrwmftgt,'\n$','','')
-  endif
   let s:netrwmftgt_islocal= a:islocal
 
   " need to do refresh so that the banner will be updated
@@ -9233,13 +9217,7 @@ endfun
 " ---------------------------------------------------------------------
 " s:FileReadable: o/s independent filereadable {{{2
 fun! s:FileReadable(fname)
-
-  if g:netrw_cygwin
-   let ret= filereadable(s:NetrwFile(substitute(a:fname,g:netrw_cygdrive.'/\(.\)','\1:/','')))
-  else
-   let ret= filereadable(s:NetrwFile(a:fname))
-  endif
-
+  let ret= filereadable(s:NetrwFile(a:fname))
   return ret
 endfun
 
@@ -9264,12 +9242,7 @@ fun! s:GetTempfile(fname)
    " let netrc#NetSource() know about the tmpfile
    let s:netrw_tmpfile= tmpfile " used by netrc#NetSource() and netrc#BrowseX()
 
-   " o/s dependencies
-   if g:netrw_cygwin != 0
-    let tmpfile = substitute(tmpfile,'^\(\a\):',g:netrw_cygdrive.'/\1','e')
-   else
-    let tmpfile = tmpfile
-   endif
+   let tmpfile = tmpfile
    let b:netrw_tmpfile= tmpfile
   else
    " re-use temporary filename

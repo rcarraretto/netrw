@@ -446,13 +446,6 @@ settings are described below, in |netrw-browser-options|, and in
 			      messages don't always seem to show up this
 			      way, but one doesn't have to quit the window.
 
- *g:netrw_cygwin*	=1 assume scp under windows is from cygwin. Also
-			   permits network browsing to use ls with time and
-			   size sorting (default if windows)
-			=0 assume Windows' scp accepts windows-style paths
-			   Network browsing uses dir instead of ls
-			   This option is ignored if you're using unix
-
  *g:netrw_use_nt_rcp*	=0 don't use the rcp of WinNT, Win2000 and WinXP
 			=1 use WinNT's rcp in binary mode         (default)
 
@@ -800,10 +793,6 @@ set in the user's <.vimrc> file: (see also |netrw-settings| |netrw-protocol|)
 	--------------		-----------------------------------------------
 <
         b:netrw_col             Holds current cursor position (during NetWrite)
-        g:netrw_cygwin          =1 assume scp under windows is from cygwin
-                                                              (default/windows)
-                                =0 assume scp under windows accepts windows
-                                   style paths                (default/else)
         g:netrw_ftp             =0 use default ftp            (uid password)
         g:netrw_ftpmode         ="binary"                     (default)
                                 ="ascii"                      (your choice)
@@ -2651,20 +2640,20 @@ your browsing preferences.  (see also: |netrw-settings|)
 
   *g:netrw_ftp_list_cmd*	options for passing along to ftp for directory
 				listing.  Defaults:
-				 unix or g:netrw_cygwin set: : "ls -lF"
+				 unix set: : "ls -lF"
 				 otherwise                     "dir"
 
 
   *g:netrw_ftp_sizelist_cmd*	options for passing along to ftp for directory
 				listing, sorted by size of file.
 				Defaults:
-				 unix or g:netrw_cygwin set: : "ls -slF"
+				 unix set: : "ls -slF"
 				 otherwise                     "dir"
 
   *g:netrw_ftp_timelist_cmd*	options for passing along to ftp for directory
 				listing, sorted by time of last modification.
 				Defaults:
-				 unix or g:netrw_cygwin set: : "ls -tlF"
+				 unix set: : "ls -tlF"
 				 otherwise                     "dir"
 
   *g:netrw_glob_escape*		='[]*?`{~$'  (unix)
@@ -3312,33 +3301,6 @@ Example: Clear netrw's marked file list via a mapping on gu >
 
 	(This section is likely to grow as I get feedback)
 	(also see |netrw-debug|)
-
-								*netrw-p2*
-	P2. I use Windows, and my network browsing with ftp doesn't sort by
-	    time or size!  -or-  The remote system is a Windows server; why
-	    don't I get sorts by time or size?
-
-		Windows' ftp has a minimal support for ls (ie. it doesn't
-		accept sorting options).  It doesn't support the -F which
-		gives an explanatory character (ABC/ for "ABC is a directory").
-		Netrw then uses "dir" to get both its thin and long listings.
-		If you think your ftp does support a full-up ls, put the
-		following into your <.vimrc>: >
-
-			let g:netrw_ftp_list_cmd    = "ls -lF"
-			let g:netrw_ftp_timelist_cmd= "ls -tlF"
-			let g:netrw_ftp_sizelist_cmd= "ls -slF"
-<
-		Alternatively, if you have cygwin on your Windows box, put
-		into your <.vimrc>: >
-
-			let g:netrw_cygwin= 1
-<
-		This problem also occurs when the remote system is Windows.
-		In this situation, the various g:netrw_ftp_[time|size]list_cmds
-		are as shown above, but the remote system will not correctly
-		modify its listing behavior.
-
 
 								*netrw-p3*
 	P3. I tried rcp://user@host/ (or protocol other than ftp) and netrw

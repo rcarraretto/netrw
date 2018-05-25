@@ -83,7 +83,6 @@ fun! netrwSettings#NetrwSettings()
   put = ''
 
   put ='+Netrw Transfer Control'
-  put = 'let g:netrw_cygwin            = '.g:netrw_cygwin
   put = 'let g:netrw_ftp               = '.g:netrw_ftp
   put = 'let g:netrw_ftpmode           = '.g:netrw_ftpmode
   put = 'let g:netrw_ignorenetrc       = '.g:netrw_ignorenetrc
