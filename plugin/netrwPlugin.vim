@@ -107,7 +107,6 @@ fun! s:LocalBrowse(dirname)
   if !exists("s:vimentered")
    " If s:vimentered doesn't exist, then the VimEnter event hasn't fired.  It will,
    " and so s:VimEnter() will then be calling this routine, but this time with s:vimentered defined.
-"   call Dret("s:LocalBrowse")
    return
   endif
 
@@ -141,7 +140,6 @@ fun! s:LocalBrowse(dirname)
   endif
 "  call Decho("(s:LocalBrowse) COMBAK#26: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
 
-"  call Dret("s:LocalBrowse")
 endfun
 
 " ---------------------------------------------------------------------
@@ -156,7 +154,6 @@ fun! s:VimEnter(dirname)
   let s:vimentered = 1
   windo call s:LocalBrowse(expand("%:p"))
   exe curwin."wincmd w"
-"  call Dret("s:VimEnter")
 endfun
 
 " ---------------------------------------------------------------------
@@ -198,7 +195,6 @@ fun! NetUserPass(...)
 "  call Decho("a:0=".a:0." case >1: a:2<".a:2.">")
   let g:netrw_passwd=a:2
  endif
-"  call Dret("NetUserPass")
 endfun
 
 " ------------------------------------------------------------------------

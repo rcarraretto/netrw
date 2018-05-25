@@ -240,7 +240,6 @@ fun! NetrwSettingHelp()
   else
    he netrw-browse-var
   endif
-"  call Dret("NetrwSettingHelp")
 endfun
 
 " ---------------------------------------------------------------------

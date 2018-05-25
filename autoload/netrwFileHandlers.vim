@@ -64,7 +64,6 @@ fun! netrwFileHandlers#Invoke(exten,fname)
    exe "let ret= s:NFH_".a:exten.'("'.a:fname.'")'
   endif
 
-"  call Dret("netrwFileHandlers#Invoke 0 : ret=".ret)
   return 0
 endfun
 
@@ -82,11 +81,9 @@ fun! s:NFH_html(pagefile)
 "   call Decho("executing !netscape ".page)
    exe "!netscape ".shellescape(page,1)
   else
-"   call Dret("s:NFH_html 0")
    return 0
   endif
 
-"  call Dret("s:NFH_html 1")
   return 1
 endfun
 
@@ -104,11 +101,9 @@ fun! s:NFH_htm(pagefile)
 "   call Decho("executing !netscape ".page)
    exe "!netscape ".shellescape(page,1)
   else
-"   call Dret("s:NFH_htm 0")
    return 0
   endif
 
-"  call Dret("s:NFH_htm 1")
   return 1
 endfun
 
@@ -122,11 +117,9 @@ fun! s:NFH_jpg(jpgfile)
 "   call Decho("silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".escape(a:jpgfile," []|'"))
    exe "!".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:jpgfile,1)
   else
-"   call Dret("s:NFH_jpg 0")
    return 0
   endif
 
-"  call Dret("s:NFH_jpg 1")
   return 1
 endfun
 
@@ -139,11 +132,9 @@ fun! s:NFH_gif(giffile)
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
    exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:giffile,1)
   else
-"   call Dret("s:NFH_gif 0")
    return 0
   endif
 
-"  call Dret("s:NFH_gif 1")
   return 1
 endfun
 
@@ -156,11 +147,9 @@ fun! s:NFH_png(pngfile)
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
    exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:pngfile,1)
   else
-"   call Dret("s:NFH_png 0")
    return 0
   endif
 
-"  call Dret("s:NFH_png 1")
   return 1
 endfun
 
@@ -173,11 +162,9 @@ fun! s:NFH_pnm(pnmfile)
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
    exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:pnmfile,1)
   else
-"   call Dret("s:NFH_pnm 0")
    return 0
   endif
 
-"  call Dret("s:NFH_pnm 1")
   return 1
 endfun
 
@@ -190,11 +177,9 @@ fun! s:NFH_bmp(bmpfile)
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
    exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:bmpfile,1)
   else
-"   call Dret("s:NFH_bmp 0")
    return 0
   endif
 
-"  call Dret("s:NFH_bmp 1")
   return 1
 endfun
 
@@ -206,11 +191,9 @@ fun! s:NFH_pdf(pdf)
   elseif executable("pdftotext")
    exe 'silent! pdftotext -nopgbrk '.shellescape(a:pdf,1)
   else
-"  call Dret("s:NFH_pdf 0")
    return 0
   endif
 
-"  call Dret("s:NFH_pdf 1")
   return 1
 endfun
 
@@ -222,11 +205,9 @@ fun! s:NFH_doc(doc)
    exe 'silent! !oowriter '.shellescape(a:doc,1)
    redraw!
   else
-"  call Dret("s:NFH_doc 0")
    return 0
   endif
 
-"  call Dret("s:NFH_doc 1")
   return 1
 endfun
 
@@ -238,11 +219,9 @@ fun! s:NFH_sxw(sxw)
    exe 'silent! !oowriter '.shellescape(a:sxw,1)
    redraw!
   else
-"   call Dret("s:NFH_sxw 0")
    return 0
   endif
 
-"  call Dret("s:NFH_sxw 1")
   return 1
 endfun
 
@@ -254,11 +233,9 @@ fun! s:NFH_xls(xls)
    exe 'silent! !oocalc '.shellescape(a:xls,1)
    redraw!
   else
-"  call Dret("s:NFH_xls 0")
    return 0
   endif
 
-"  call Dret("s:NFH_xls 1")
   return 1
 endfun
 
@@ -278,11 +255,9 @@ fun! s:NFH_ps(ps)
    exe "silent! !gswin32 ".shellescape(a:ps,1)
    redraw!
   else
-"   call Dret("s:NFH_ps 0")
    return 0
   endif
 
-"  call Dret("s:NFH_ps 1")
   return 1
 endfun
 
@@ -302,10 +277,8 @@ fun! s:NFH_eps(eps)
    exe "silent! !gswin32 ".shellescape(a:eps,1)
    redraw!
   else
-"   call Dret("s:NFH_eps 0")
    return 0
   endif
-"  call Dret("s:NFH_eps 0")
   return 1
 endfun
 
@@ -316,11 +289,9 @@ fun! s:NFH_fig(fig)
    exe "silent! !xfig ".a:fig
    redraw!
   else
-"   call Dret("s:NFH_fig 0")
    return 0
   endif
 
-"  call Dret("s:NFH_fig 1")
   return 1
 endfun
 
@@ -331,11 +302,9 @@ fun! s:NFH_obj(obj)
    exe "silent! !tgif ".a:obj
    redraw!
   else
-"   call Dret("s:NFH_obj 0")
    return 0
   endif
 
-"  call Dret("s:NFH_obj 1")
   return 1
 endfun
 
