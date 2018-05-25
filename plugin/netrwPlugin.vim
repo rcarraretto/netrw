@@ -23,7 +23,6 @@ endif
 let g:loaded_rc_netrwPlugin = "v162j"
 let s:keepcpo = &cpo
 set cpo&vim
-"DechoRemOn
 
 " ---------------------------------------------------------------------
 " Public Interface: {{{1
@@ -100,10 +99,6 @@ endif
 " ---------------------------------------------------------------------
 " LocalBrowse: invokes netrc#LocalBrowseCheck() on directory buffers {{{2
 fun! s:LocalBrowse(dirname)
-  " Unfortunate interaction -- only DechoMsg debugging calls can be safely used here.
-  " Otherwise, the BufEnter event gets triggered when attempts to write to
-  " the DBG buffer are made.
-
   if !exists("s:vimentered")
    " If s:vimentered doesn't exist, then the VimEnter event hasn't fired.  It will,
    " and so s:VimEnter() will then be calling this routine, but this time with s:vimentered defined.

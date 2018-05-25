@@ -47,8 +47,6 @@ endif
 
 let s:keepcpo= &cpo
 setl cpo&vim
-"let g:dechofuncname= 1
-"DechoRemOn
 
 " ======================
 "  Netrw Variables: {{{1
@@ -542,11 +540,6 @@ else
 endif
 call s:NetrwInit("s:netrw_posn",'{}')
 
-" BufEnter event ignored by decho when following variable is true
-"  Has a side effect that doau BufReadPost doesn't work, so
-"  files read by network transfer aren't appropriately highlighted.
-"let g:decho_bufenter = 1	"Decho
-
 " ======================
 "  Netrw Initialization: {{{1
 " ======================
@@ -555,7 +548,6 @@ if v:version >= 700 && has("balloon_eval") && !exists("s:initbeval") && !exists(
  au FileType netrw	setl beval
  au WinLeave *		if &ft == "netrw" && exists("s:initbeval")|let &beval= s:initbeval|endif
  au VimEnter * 		let s:initbeval= &beval
-"else " Decho
 endif
 au WinEnter *	if &ft == "netrw"|call s:NetrwInsureWinVars()|endif
 
@@ -598,7 +590,6 @@ if v:version >= 700 && has("balloon_eval") && has("syntax") && exists("g:syntax_
    endif
    return mesg
  endfun
-"else " Decho
 endif
 
 " ------------------------------------------------------------------------
@@ -646,7 +637,6 @@ fun! netrc#Explore(indx,dosplit,style,...)
    if a:1 =~ "\\\s" && !filereadable(s:NetrwFile(a:1)) && !isdirectory(s:NetrwFile(a:1))
     call netrc#Explore(a:indx,a:dosplit,a:style,substitute(a:1,'\\\(\s\)','\1','g'))
     return
-"   else " Decho
    endif
   endif
 
@@ -703,7 +693,6 @@ fun! netrc#Explore(indx,dosplit,style,...)
     call s:RestoreBufVars()
    endif
    call s:RestoreWinVars()
-"  else " Decho
   endif
   NetrwKeepj norm! 0
 
@@ -1033,7 +1022,6 @@ endfun
 
 " ---------------------------------------------------------------------
 " netrc#Lexplore: toggle Explorer window, keeping it on the left of the current tab {{{2
-"DechoRemOn
 fun! netrc#Lexplore(count,rightside,...)
   let curwin= winnr()
 
@@ -2506,7 +2494,6 @@ fun! s:NetrwGetFile(readcmd, tfile, method)
   " User-provided (ie. optional) fix-it-up command
   if exists("*NetReadFixup")
    NetrwKeepj call NetReadFixup(a:method, line1, line2)
-"  else " Decho
   endif
 
   if has("gui") && has("menu") && has("gui_running") && &go =~# 'm' && g:netrw_menu
@@ -2751,11 +2738,6 @@ fun! s:NetrwMethod(choice)
    " retain port number as implicit for subsequent ftp operations
    let g:netrw_port= netrw_port
   endif
-
-"  if exists("g:netrw_uid")		"Decho
-"  endif					"Decho
-"  if exists("s:netrw_passwd")		"Decho
-"  endif					"Decho
 endfun
 
 " ------------------------------------------------------------------------
@@ -3969,7 +3951,6 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
      NetrwKeepj call s:NetrwOptionRestore("s:")
     endif
    endif
-"  else " Decho
   endif
 
   " set up o/s-dependent directory recognition pattern
@@ -4227,7 +4208,6 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
    " dorestore is zero'd when a local file was hidden or bufhidden;
    " in such a case, we want to keep whatever settings it may have.
    NetrwKeepj call s:NetrwOptionRestore("s:")
-"  else " Decho
   endif
   if dolockout && dorestore
    if filewritable(dirname)
@@ -7791,7 +7771,6 @@ fun! s:NetrwTreeDir(islocal)
     " now force a refresh
     sil! NetrwKeepj %d _
     return b:netrw_curdir
-"   else " Decho
    endif
 
    let potentialdir= s:NetrwFile(substitute(curline,'^'.s:treedepthstring.'\+ \(.*\)@$','\1',''))
@@ -8085,9 +8064,6 @@ fun! s:PerformListing(islocal)
   NetrwKeepj call s:NetrwSafeOptions()
   setl noro ma
 
-"  if exists("g:netrw_silent") && g:netrw_silent == 0 && &ch >= 1	" Decho
-"  endif								" Decho
-
   if exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST && exists("w:netrw_treedict")
    " force a refresh for tree listings
    sil! NetrwKeepj %d _
@@ -8141,7 +8117,6 @@ fun! s:PerformListing(islocal)
     let w:netrw_bannercnt= w:netrw_bannercnt + 1
    endif
    exe "sil! NetrwKeepj ".w:netrw_bannercnt
-"  else " Decho
   endif
 
   " show copy/move target, if any {{{3
@@ -8175,14 +8150,12 @@ fun! s:PerformListing(islocal)
    NetrwKeepj put ='\"   Quick Help: <F1>:help  '.s:QuickHelp[quickhelp]
    NetrwKeepj put ='\" =============================================================================='
    let w:netrw_bannercnt= w:netrw_bannercnt + 2
-"  else " Decho
   endif
 
   " bannercnt should index the line just after the banner
   if g:netrw_banner
    let w:netrw_bannercnt= w:netrw_bannercnt + 1
    exe "sil! NetrwKeepj ".w:netrw_bannercnt
-"  else " Decho
   endif
 
   " get list of files
@@ -8422,7 +8395,6 @@ fun! s:NetrwRemoteFtpCmd(path,listcmd)
    " -n  win32: quit being obnoxious about password
    if exists("w:netrw_bannercnt")
     call s:NetrwExe(s:netrw_silentxfer.w:netrw_bannercnt.",$!".s:netrw_ftp_cmd." ".g:netrw_ftp_options)
-"   else " Decho
    endif
 
   ".........................................
@@ -8635,9 +8607,6 @@ fun! s:NetrwRemoteListing()
     NetrwKeepj call histdel("/",-1)
    endif
   endif
-
-"  if exists("w:netrw_bannercnt") && w:netrw_bannercnt <= line("$") " Decho
-"  endif " Decho
 
   return 0
 endfun
@@ -10128,7 +10097,6 @@ fun! s:NetrwRexplore(islocal,dirname)
    exe "NetrwKeepj e ".w:netrw_rexfile
    unlet w:netrw_rexfile
    return
-"  else " Decho
   endif
 
   " ---------------------------

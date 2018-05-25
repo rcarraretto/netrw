@@ -3768,56 +3768,6 @@ settings, .viminfo file, and other plugins.  If the problem does not appear,
 then you need to determine which setting in your .vimrc is causing the
 conflict with netrw or which plugin(s) is/are involved.
 
-Step 3: If the problem still is present, then get a debugging trace from
-netrw:
-
-	1. Get the <Decho.vim> script, available as:
-
-	     http://www.drchip.org/astronaut/vim/index.html#DECHO
-	   or
-	     http://vim.sourceforge.net/scripts/script.php?script_id=120
-
-	  Decho.vim is provided as a "vimball"; see |vimball-intro|.
-
-	2. Edit the <netrw.vim> file by typing: >
-
-		vim netrw.vim
-		:DechoOn
-		:wq
-<
-	   To restore to normal non-debugging behavior, re-edit <netrw.vim>
-	   and type >
-
-		vim netrw.vim
-		:DechoOff
-		:wq
-<
-	   This command, provided by <Decho.vim>, will comment out all
-	   Decho-debugging statements (Dfunc(), Dret(), Decho(), Dredir()).
-
-	3. Then bring up vim and attempt to evoke the problem by doing a
-	   transfer or doing some browsing.  A set of messages should appear
-	   concerning the steps that <netrw.vim> took in attempting to
-	   read/write your file over the network in a separate tab or
-	   server vim window.
-
-	   To save the file, use >
-
-		:tabnext
-		:set bt=
-		:w! DBG
-
-<	   Furthermore, it'd be helpful if you would type >
-		:Dsep <command>
-<	   where <command> is the command you're about to type next,
-	   thereby making it easier to associate which part of the
-	   debugging trace is due to which command.
-
-	   Please send that information to <netrw.vim>'s maintainer along
-	   with the o/s you're using and the vim version that you're using
-	   (see |:version|) >
-		NdrOchip at ScampbellPfamily.AbizM - NOSPAM
-<
 ==============================================================================
 12. History						*netrw-history* {{{1
 
