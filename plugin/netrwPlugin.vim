@@ -33,9 +33,6 @@ augroup RcFileExplorer
  au BufLeave *  if &ft != "netrw"|let w:netrw_prvfile= expand("%:p")|endif
  au BufEnter *	sil call s:LocalBrowse(expand("<amatch>"))
  au VimEnter *	sil call s:VimEnter(expand("<amatch>"))
- if has("win32") || has("win95") || has("win64") || has("win16")
-  au BufEnter .* sil call s:LocalBrowse(expand("<amatch>"))
- endif
 augroup END
 
 " Network Browsing Reading Writing: {{{2

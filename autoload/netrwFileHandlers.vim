@@ -240,9 +240,6 @@ fun! s:NFH_ps(ps)
   elseif executable("ghostscript")
    exe "silent! !ghostscript ".shellescape(a:ps,1)
    redraw!
-  elseif executable("gswin32")
-   exe "silent! !gswin32 ".shellescape(a:ps,1)
-   redraw!
   else
    return 0
   endif
@@ -261,9 +258,6 @@ fun! s:NFH_eps(eps)
    redraw!
   elseif executable("ghostscript")
    exe "silent! !ghostscript ".shellescape(a:eps,1)
-   redraw!
-  elseif executable("gswin32")
-   exe "silent! !gswin32 ".shellescape(a:eps,1)
    redraw!
   else
    return 0
