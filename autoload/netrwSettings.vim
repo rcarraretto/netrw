@@ -16,10 +16,10 @@
 "                synagogues, preaching the gospel of the kingdom, and healing
 "                every disease and every sickness among the people.
 " Load Once: {{{1
-if exists("g:loaded_netrwSettings") || &cp
+if exists("g:loaded_rc_netrwSettings") || &cp
   finish
 endif
-let g:loaded_netrwSettings = "v16"
+let g:loaded_rc_netrwSettings = "v16"
 if v:version < 700
  echohl WarningMsg
  echo "***warning*** this version of netrwSettings needs vim 7.0"
@@ -31,8 +31,8 @@ endif
 " NetrwSettings: {{{1
 fun! netrwSettings#NetrwSettings()
   " this call is here largely just to insure that netrw has been loaded
-  call netrw#SavePosn()
-  if !exists("g:loaded_netrw")
+  call netrc#SavePosn()
+  if !exists("g:loaded_rc_netrw")
    echohl WarningMsg | echomsg "***sorry*** netrw needs to be loaded prior to using NetrwSettings" | echohl None
    return
   endif

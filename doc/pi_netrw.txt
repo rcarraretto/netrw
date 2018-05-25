@@ -185,8 +185,8 @@ If you want to use plugins, but for some reason don't wish to use netrw, then
 you need to avoid loading both the plugin and the autoload portions of netrw.
 You may do so by placing the following two lines in your <.vimrc>: >
 
-	:let g:loaded_netrw       = 1
-	:let g:loaded_netrwPlugin = 1
+	:let g:loaded_rc_netrw       = 1
+	:let g:loaded_rc_netrwPlugin = 1
 <
 
 ==============================================================================
@@ -2805,7 +2805,7 @@ your browsing preferences.  (see also: |netrw-settings|)
   *g:netrw_localmkdiropt*	=""             Linux/Unix/MacOS/Cygwin
 				=" /c mkdir"                    Windows
 				Options for |g:netrw_localmkdir|
-				 
+
   *g:netrw_localmovecmd*	="mv"           Linux/Unix/MacOS/Cygwin
 				=expand("$COMSPEC")             Windows
 				Moves marked files (|netrw-mf|) to target
@@ -2815,7 +2815,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				=" /c move"                     Windows
 				Options for |g:netrw_localmovecmd|
 
-  *g:netrw_localrmdir*		="rmdir"        Linux/Unix/MacOS/Cygwin  
+  *g:netrw_localrmdir*		="rmdir"        Linux/Unix/MacOS/Cygwin
  				=expand("$COMSPEC")             Windows
 				Remove directory command (rmdir)
 				This variable is only used if your vim is
@@ -3309,7 +3309,7 @@ to hold a |List| of lists of keymap strings and function names: >
 	[["keymap-sequence","ExampleUserMapFunc"],...]
 <
 When netrw is setting up maps for a netrw buffer, if |g:Netrw_UserMaps|
-exists, then the internal function netrw#UserMaps(islocal) is called.
+exists, then the internal function netrc#UserMaps(islocal) is called.
 This function goes through all the entries in the |g:Netrw_UserMaps| list:
 
 	* sets up maps: >
@@ -3330,25 +3330,25 @@ where a:islocal is 1 if its a local-directory system call or 0 when
 remote-directory system call.
 
 			        *netrw-call*  *netrw-expose*  *netrw-modify*
-Use netrw#Expose("varname")          to access netrw-internal (script-local)
+Use netrc#Expose("varname")          to access netrw-internal (script-local)
 				     variables.
-Use netrw#Modify("varname",newvalue) to change netrw-internal variables.
-Use netrw#Call("funcname"[,args])    to call a netrw-internal function with
+Use netrc#Modify("varname",newvalue) to change netrw-internal variables.
+Use netrc#Call("funcname"[,args])    to call a netrw-internal function with
 				     specified arguments.
 
 Example: Get a copy of netrw's marked file list: >
 
-	let netrwmarkfilelist= netrw#Expose("netrwmarkfilelist")
+	let netrwmarkfilelist= netrc#Expose("netrwmarkfilelist")
 <
 Example: Modify the value of netrw's marked file list: >
 
-	call netrw#Modify("netrwmarkfilelist",[])
+	call netrc#Modify("netrwmarkfilelist",[])
 <
 Example: Clear netrw's marked file list via a mapping on gu >
     " ExampleUserMap: {{{2
     fun! ExampleUserMap(islocal)
-      call netrw#Modify("netrwmarkfilelist",[])
-      call netrw#Modify('netrwmarkfilemtch_{bufnr("%")}',"")
+      call netrc#Modify("netrwmarkfilelist",[])
+      call netrc#Modify('netrwmarkfilemtch_{bufnr("%")}',"")
       let retval= ["refresh"]
       return retval
     endfun
@@ -3852,11 +3852,11 @@ netrw:
 				  apply netrw to a directory that was without
 				  read permission caused a syntax error.
 		Jan 13, 2017	* (Ingo Karkat) provided a patch which makes
-				  using netrw#Call() better.  Now returns
+				  using netrc#Call() better.  Now returns
 				  value of internal routines return, for example.
-		Jan 13, 2017	* (Ingo Karkat) changed netrw#FileUrlRead to
+		Jan 13, 2017	* (Ingo Karkat) changed netrc#FileUrlRead to
 				  use |:edit| instead of |:read|.  I also
-				  changed the routine name to netrw#FileUrlEdit.
+				  changed the routine name to netrc#FileUrlEdit.
 		Jan 16, 2017	* (Sayem) reported a problem where :Lexplore
 				  could generate a new listing buffer and
 				  window instead of toggling the netrw display.
@@ -3881,7 +3881,7 @@ netrw:
 				* s:NetrwLeftmouse and s:NetrwCLeftmouse will
 				  return without doing anything if invoked
 				  when inside a non-netrw window
-		Jun 15, 2016	* gx now calls netrw#GX() which returns
+		Jun 15, 2016	* gx now calls netrc#GX() which returns
 				  the word under the cursor.  The new
 				  wrinkle: if one is in a netrw buffer,
 				  then netrw's s:NetrwGetWord().
@@ -3968,7 +3968,7 @@ netrw:
 				  (using %-S instead of %-s with a |printf()|
 		Jul 13, 2015	* (Daniel Hahler) CheckIfKde() could be true
 				  but kfmclient not installed.  Changed order
-				  in netrw#BrowseX(): checks if kde and
+				  in netrc#BrowseX(): checks if kde and
 				  kfmclient, then will use xdg-open on a unix
 				  system (if xdg-open is executable)
 		Aug 11, 2015	* (McDonnell) tree listing mode wouldn't
@@ -4039,7 +4039,7 @@ netrw:
 		Oct 07, 2014	* gx (see |netrw-gx|) when atop a directory,
 				  will now do |gf| instead
 		Nov 06, 2014	* For cygwin: cygstart will be available for
-				  netrw#BrowseX() to use if its executable.
+				  netrc#BrowseX() to use if its executable.
 		Nov 07, 2014	* Began support for file://... urls.  Will use
 				  |g:netrw_file_cmd| (typically elinks or links)
 		Dec 02, 2014	* began work on having mc (|netrw-mc|) copy
@@ -4065,7 +4065,7 @@ netrw:
 		Apr 14, 2014	* whenever netrw marks a buffer as ro,
 				  it will also mark it as nomod.
 		Apr 16, 2014	* sftp protocol now supported by
-				  netrw#Obtain(); this means that one
+				  netrc#Obtain(); this means that one
 				  may use "mc" to copy a remote file
 				  to a local file using sftp, and that
 				  the |netrw-O| command can obtain remote
@@ -4088,7 +4088,7 @@ netrw:
 				* (A Loumiotis) reported that completion
 				  using a directory name containing spaces
 				  did not work.  Fixed with a retry in
-				  netrw#Explore() which removes the
+				  netrc#Explore() which removes the
 				  backslashes vim inserted.
 		Feb 26, 2014	* :Rexplore now records the current file
 				   using w:netrw_rexfile when returning via
@@ -4123,7 +4123,7 @@ netrw:
 				  instead.  Consistent error handling results
 				  and it also handles Window's shares
 				* Fixed |netrw-d| command when applied with ftp
-				* https: support included for netrw#NetRead()
+				* https: support included for netrc#NetRead()
 	v150:	Jul 12, 2013	* removed a "keepalt" to allow ":e #" to {{{2
 				  return to the netrw directory listing
 		Jul 13, 2013	* (Jonas Diemer) suggested changing
@@ -4163,7 +4163,7 @@ netrw:
 				  /cygdrive prefix be a user-alterable
 				  parameter.
 		Jan 02, 2014	* Fixed a problem with netrw-based ballon
-				  evaluation (ie. netrw#NetrwBaloonHelp()
+				  evaluation (ie. netrc#NetrwBaloonHelp()
 				  not having been loaded error messages)
 		Jan 03, 2014	* Fixed a problem with tree listings
 				* New command installed: |:Ntree|

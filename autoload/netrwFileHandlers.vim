@@ -17,10 +17,10 @@
 
 " ---------------------------------------------------------------------
 " Load Once: {{{1
-if exists("g:loaded_netrwFileHandlers") || &cp
+if exists("g:loaded_rc_netrwFileHandlers") || &cp
  finish
 endif
-let g:loaded_netrwFileHandlers= "v11b"
+let g:loaded_rc_netrwFileHandlers= "v11b"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of netrwFileHandlers needs vim 7.2"
