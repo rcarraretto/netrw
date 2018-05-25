@@ -2468,7 +2468,6 @@ fun! s:NetrwGetFile(readcmd, tfile, method)
    let iskkeep= &l:isk
    setl isk-=/
    let &l:isk= iskkeep
-"   call Dredir("ls!","NetrwGetFile (renamed buffer back to remote filename<".rfile."> : expand(%)<".expand("%").">)")
    let line1 = 1
    let line2 = line("$")
 
@@ -3127,7 +3126,6 @@ endfun
 "    Often called via:  Explore/e dirname/etc -> netrc#LocalBrowseCheck() -> s:NetrwBrowse()
 fun! s:NetrwBrowse(islocal,dirname)
   if !exists("w:netrw_liststyle")|let w:netrw_liststyle= g:netrw_liststyle|endif
-"  call Dredir("ls!","s:NetrwBrowse")
 
   " save alternate-file's filename if w:netrw_rexlocal doesn't exist
   " This is useful when one edits a local file, then :e ., then :Rex
@@ -3691,7 +3689,6 @@ fun! s:NetrwListSettings(islocal)
   if g:netrw_use_noswf
    setl noswf
   endif
-"  call Dredir("ls!","s:NetrwListSettings")
   exe "setl ts=".(g:netrw_maxfilenamelen+1)
   setl isk+=.,~,-
   if g:netrw_fastbrowse > a:islocal
@@ -3923,7 +3920,6 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
    " Don't try to change-directory: this can happen, for example, when netrc#ErrorMsg has been called
    " and the current window is the NetrwMessage window.
    let @@= ykeep
-"   call Dredir("ls!","s:NetrwBrowseChgDir")
    return
   endif
 
@@ -4502,7 +4498,6 @@ endfun
 "                   Using the file command on a "[No Name]" buffer does not seem to cause the old "[No Name]" buffer
 "                   to become an unlisted buffer, so in that case don't bwipe it.
 fun! s:NetrwBufRename(newname)
-"  call Dredir("ls!","s:NetrwBufRename (before rename)")
   let oldbufname= bufname(bufnr("%"))
   if oldbufname != a:newname
    exe 'sil! keepj keepalt file '.fnameescape(a:newname)
@@ -4511,7 +4506,6 @@ fun! s:NetrwBufRename(newname)
     exe "bwipe! ".oldbufnr
    endif
   endif
-"  call Dredir("ls!","s:NetrwBufRename (after rename)")
 endfun
 
 " ---------------------------------------------------------------------
@@ -8877,7 +8871,6 @@ fun! netrc#LocalBrowseCheck(dirname)
   " The &ft == "netrw" test was installed because the BufEnter event
   " would hit when re-entering netrw windows, creating unexpected
   " refreshes (and would do so in the middle of NetrwSaveOptions(), too)
-"  call Dredir("ls!","netrc#LocalBrowseCheck")
 
   let ykeep= @@
   if isdirectory(s:NetrwFile(a:dirname))

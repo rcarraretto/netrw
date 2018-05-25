@@ -118,7 +118,6 @@ fun! s:LocalBrowse(dirname)
    endif
 
   elseif isdirectory(a:dirname)
-"   call Dredir("LocalBrowse ft last set: ","verbose set ft")
    sil! call netrc#LocalBrowseCheck(a:dirname)
    if exists("w:netrw_bannercnt") && line('.') < w:netrw_bannercnt
     exe w:netrw_bannercnt
