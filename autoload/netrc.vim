@@ -3216,10 +3216,10 @@ fun! s:NetrwFile(fname)
    endif
 
    if fname =~ '^/'
-    " not windows, full path given
+    " full path given
     let ret= fname
    else
-    " not windows, relative path given
+    " relative path given
     let ret= s:ComposePath(b:netrw_curdir,fname)
    endif
   else
@@ -9942,7 +9942,7 @@ fun! s:Strlen(x)
 endfun
 
 " ---------------------------------------------------------------------
-" s:ShellEscape: shellescape(), or special windows handling {{{2
+" s:ShellEscape: {{{2
 fun! s:ShellEscape(s, ...)
   let f = a:0 > 0 ? a:1 : 0
   return shellescape(a:s, f)
