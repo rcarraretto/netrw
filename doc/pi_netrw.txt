@@ -19,8 +19,8 @@ Copyright: Copyright (C) 2016 Charles E Campbell    *netrw-copyright*
 
 
 		*netrw*
-		*dav*    *ftp*    *netrw-file*  *rcp*    *scp*
-		*davs*   *http*   *netrw.vim*   *rsync*  *sftp*
+		*ftp*    *netrw-file*  *rcp*    *scp*
+		*http*   *netrw.vim*   *rsync*  *sftp*
 		*fetch*  *network*
 
 ==============================================================================
@@ -193,7 +193,7 @@ You may do so by placing the following two lines in your <.vimrc>: >
 3. Netrw Reference					*netrw-ref* {{{1
 
    Netrw supports several protocols in addition to scp and ftp as mentioned
-   in |netrw-start|.  These include dav, fetch, http,... well, just look
+   in |netrw-start|.  These include fetch, http,... well, just look
    at the list in |netrw-externapp|.  Each protocol is associated with a
    variable which holds the default command supporting that protocol.
 
@@ -201,8 +201,6 @@ EXTERNAL APPLICATIONS AND PROTOCOLS			*netrw-externapp* {{{2
 
 	Protocol  Variable	       Default Value
 	--------  ----------------     -------------
-	   dav:   *g:netrw_dav_cmd*      = "cadaver"    if cadaver is executable
-	   dav:   g:netrw_dav_cmd      = "curl -o"    elseif curl is available
 	 fetch:   *g:netrw_fetch_cmd*    = "fetch -o"   if fetch is available
 	   ftp:   *g:netrw_ftp_cmd*      = "ftp"
 	  http:   *g:netrw_http_cmd*     = "elinks"     if   elinks  is available
@@ -249,7 +247,6 @@ READING						*netrw-read* *netrw-nread* {{{2
 	:Nread "machine:path"				uses rcp
 	:Nread "machine path"				uses ftp w/ <.netrc>
 	:Nread "machine id password path"		uses ftp
-	:Nread "dav://machine[:port]/path"		uses cadaver
 	:Nread "fetch://[user@]machine/path"		uses fetch
 	:Nread "ftp://[user@]machine[[:#]port]/path"	uses ftp w/ <.netrc>
 	:Nread "http://[user@]machine/path"		uses http  uses wget
@@ -271,7 +268,6 @@ WRITING					*netrw-write* *netrw-nwrite* {{{2
 	:Nwrite "machine:path"				uses rcp
 	:Nwrite "machine path"				uses ftp w/ <.netrc>
 	:Nwrite "machine id password path"		uses ftp
-	:Nwrite "dav://machine[:port]/path"		uses cadaver
 	:Nwrite "ftp://[user@]machine[[:#]port]/path"	uses ftp w/ <.netrc>
 	:Nwrite "rcp://[user@]machine/path"		uses rcp
 	:Nwrite "rsync://[user@]machine[:port]/path"	uses rsync
@@ -289,7 +285,6 @@ SOURCING					*netrw-source* {{{2
 	Netrw also provides the Nsource command:
 
 	:Nsource ?					give help
-	:Nsource "dav://machine[:port]/path"		uses cadaver
 	:Nsource "fetch://[user@]machine/path"		uses fetch
 	:Nsource "ftp://[user@]machine[[:#]port]/path"	uses ftp w/ <.netrc>
 	:Nsource "http://[user@]machine/path"		uses http  uses wget
@@ -471,7 +466,7 @@ file using root-relative paths, use the full path:
 Network-oriented file transfer under Vim is implemented by a VimL-based script
 (<netrw.vim>) using plugin techniques.  It currently supports both reading and
 writing across networks using rcp, scp, ftp or ftp+<.netrc>, scp, fetch,
-dav/cadaver, rsync, or sftp.
+rsync, or sftp.
 
 http is currently supported read-only via use of wget or fetch.
 
@@ -576,14 +571,6 @@ additional prompting.
   +=================================+============================+============+
   |  Reading                        | Writing                    |  Uses      |
   +=================================+============================+============+
-  | DAV:                            |                            |            |
-  |  dav://host/path                |                            | cadaver    |
-  |  :Nread dav://host/path         | :Nwrite dav://host/path    | cadaver    |
-  +---------------------------------+----------------------------+------------+
-  | DAV + SSL:                      |                            |            |
-  |  davs://host/path               |                            | cadaver    |
-  |  :Nread davs://host/path        | :Nwrite davs://host/path   | cadaver    |
-  +---------------------------------+----------------------------+------------+
   | FETCH:                          |                            |            |
   |  fetch://[user@]host/path       |                            |            |
   |  fetch://[user@]host:http/path  |  Not Available             | fetch      |
@@ -839,8 +826,6 @@ variables listed below, and may be modified by the user.
 <    netrw_ftp         variable    =doesn't exist  userid set by "user userid"
                                   =0              userid set by "user userid"
                                   =1              userid set by "userid"
-    g:netrw_dav_cmd      var   ="cadaver"      if cadaver  is executable
-    g:netrw_dav_cmd      var   ="curl -o"      elseif curl is executable
     g:netrw_fetch_cmd    var   ="fetch -o"     if fetch is available
     g:netrw_ftp_cmd      var   ="ftp"
     g:netrw_http_cmd     var   ="fetch -o"     if      fetch is available
@@ -904,11 +889,6 @@ requested it and the temporary file deleted.
 
 If your ftp doesn't accept the "user" command and immediately just demands a
 userid, then try putting "let netrw_ftp=1" in your <.vimrc>.
-
-								*netrw-cadaver*
-To handle the SSL certificate dialog for untrusted servers, one may pull
-down the certificate and place it into /usr/ssl/cert.pem.  This operation
-renders the server treatment as "trusted".
 
 (Related topics: |ftp| |netrw-userpass| |netrw-start|)
 
@@ -4067,7 +4047,6 @@ conflict with netrw or which plugin(s) is/are involved.
 14. Credits						*netrw-credits* {{{1
 
 	Vim editor	by Bram Moolenaar (Thanks, Bram!)
-	dav		support by C Campbell
 	fetch		support by Bram Moolenaar and C Campbell
 	ftp		support by C Campbell <NdrOchip@ScampbellPfamily.AbizM>
 	http		support by Bram Moolenaar <bram@moolenaar.net>

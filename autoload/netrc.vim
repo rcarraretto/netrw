@@ -184,15 +184,6 @@ let g:netrw_localrmdiropt      = ""
 " Default values for netrw's global protocol variables {{{2
 call s:NetrwInit("g:netrw_use_errorwindow",1)
 
-if !exists("g:netrw_dav_cmd")
- if executable("cadaver")
-  let g:netrw_dav_cmd	= "cadaver"
- elseif executable("curl")
-  let g:netrw_dav_cmd	= "curl"
- else
-  let g:netrw_dav_cmd   = ""
- endif
-endif
 if !exists("g:netrw_fetch_cmd")
  if executable("fetch")
   let g:netrw_fetch_cmd	= "fetch -o"
@@ -1578,7 +1569,6 @@ fun! netrc#NetRead(mode,...)
      echomsg ':Nread machine:path                         uses rcp'
      echomsg ':Nread "machine path"                       uses ftp   with <.netrc>'
      echomsg ':Nread "machine id password path"           uses ftp'
-     echomsg ':Nread dav://machine[:port]/path            uses cadaver'
      echomsg ':Nread fetch://machine/path                 uses fetch'
      echomsg ':Nread ftp://[user@]machine[:port]/path     uses ftp   autodetects <.netrc>'
      echomsg ':Nread http://[user@]machine/path           uses http  wget'
@@ -1791,40 +1781,6 @@ fun! netrc#NetRead(mode,...)
     setl ro nomod
 
    ".........................................
-   " NetRead: (dav) NetRead Method #6 {{{3
-   elseif     b:netrw_method  == 6
-
-    if !executable(g:netrw_dav_cmd)
-     call netrc#ErrorMsg(s:ERROR,g:netrw_dav_cmd." is not executable",73)
-     return
-    endif
-    if g:netrw_dav_cmd =~ "curl"
-     call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_dav_cmd." ".s:ShellEscape("dav://".g:netrw_machine.b:netrw_fname,1)." ".s:ShellEscape(tmpfile,1))
-    else
-     " Construct execution string (four lines) which will be passed through filter
-     let netrw_fname= escape(b:netrw_fname,g:netrw_fname_escape)
-     new
-     setl ff=unix
-     if exists("g:netrw_port") && g:netrw_port != ""
-      NetrwKeepj put ='open '.g:netrw_machine.' '.g:netrw_port
-     else
-      NetrwKeepj put ='open '.g:netrw_machine
-     endif
-     if exists("g:netrw_uid") && exists("s:netrw_passwd") && g:netrw_uid != ""
-      NetrwKeepj put ='user '.g:netrw_uid.' '.s:netrw_passwd
-     endif
-     NetrwKeepj put ='get '.netrw_fname.' '.tmpfile
-     NetrwKeepj put ='quit'
-
-     " perform cadaver operation:
-     NetrwKeepj norm! 1Gdd
-     call s:NetrwExe(s:netrw_silentxfer."%!".g:netrw_dav_cmd)
-     keepj bd!
-    endif
-    let result           = s:NetrwGetFile(readcmd, tmpfile, b:netrw_method)
-    let b:netrw_lastfile = choice
-
-   ".........................................
    " NetRead: (rsync) NetRead Method #7 {{{3
    elseif     b:netrw_method  == 7
     call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_rsync_cmd." ".s:ShellEscape(g:netrw_machine.g:netrw_rsync_sep.b:netrw_fname,1)." ".s:ShellEscape(tmpfile,1))
@@ -1946,7 +1902,6 @@ fun! netrc#NetWrite(...) range
      echomsg ':Nwrite machine:path                        uses rcp'
      echomsg ':Nwrite "machine path"                      uses ftp with <.netrc>'
      echomsg ':Nwrite "machine id password path"          uses ftp'
-     echomsg ':Nwrite dav://[user@]machine/path           uses cadaver'
      echomsg ':Nwrite fetch://[user@]machine/path         uses fetch'
      echomsg ':Nwrite ftp://machine[#port]/path           uses ftp  (autodetects <.netrc>)'
      echomsg ':Nwrite rcp://machine/path                  uses rcp'
@@ -2131,42 +2086,6 @@ fun! netrc#NetWrite(...) range
     endif
 
    ".........................................
-   " NetWrite: (dav) NetWrite Method #6 (cadaver) {{{3
-   elseif     b:netrw_method == 6
-
-    " Construct execution string (four lines) which will be passed through filter
-    let netrw_fname = escape(b:netrw_fname,g:netrw_fname_escape)
-    let bhkeep      = &l:bh
-
-    " formerly just a "new...bd!", that changed the window sizes when equalalways.  Using enew workaround instead
-    let curbuf      = bufnr("%")
-    setl bh=hide
-    keepj keepalt enew
-
-    setl ff=unix
-    if exists("g:netrw_port") && g:netrw_port != ""
-     NetrwKeepj put ='open '.g:netrw_machine.' '.g:netrw_port
-    else
-     NetrwKeepj put ='open '.g:netrw_machine
-    endif
-    if exists("g:netrw_uid") && exists("s:netrw_passwd") && g:netrw_uid != ""
-     NetrwKeepj put ='user '.g:netrw_uid.' '.s:netrw_passwd
-    endif
-    NetrwKeepj put ='put '.tmpfile.' '.netrw_fname
-
-    " perform cadaver operation:
-    NetrwKeepj norm! 1Gdd
-    call s:NetrwExe(s:netrw_silentxfer."%!".g:netrw_dav_cmd)
-
-    " remove enew buffer (quietly)
-    let filtbuf= bufnr("%")
-    exe curbuf."b!"
-    let &l:bh            = bhkeep
-    exe filtbuf."bw!"
-
-    let b:netrw_lastfile = choice
-
-   ".........................................
    " NetWrite: (rsync) NetWrite Method #7 {{{3
    elseif     b:netrw_method == 7
     call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_rsync_cmd." ".s:ShellEscape(tmpfile,1)." ".s:ShellEscape(g:netrw_machine.g:netrw_rsync_sep.b:netrw_fname,1))
@@ -2231,7 +2150,6 @@ fun! netrc#NetSource(...)
   if a:0 > 0 && a:1 == '?'
    " give help
    echomsg 'NetSource Usage:'
-   echomsg ':Nsource dav://machine[:port]/path            uses cadaver'
    echomsg ':Nsource fetch://machine/path                 uses fetch'
    echomsg ':Nsource ftp://[user@]machine[:port]/path     uses ftp   autodetects <.netrc>'
    echomsg ':Nsource http[s]://[user@]machine/path        uses http  wget'
@@ -2388,7 +2306,6 @@ endfun
 "	           3: ftp + machine, id, password, and [path]filename
 "	           4: scp
 "	           5: http[s] (wget)
-"	           6: dav
 "	           7: rsync
 "	           8: fetch
 "	           9: sftp
@@ -2436,7 +2353,6 @@ fun! s:NetrwMethod(choice)
   " rcphf    : [user@]host:filename		     Use rcp
   " scpurm   : scp://[user@]host[[#:]port]/filename  Use scp
   " httpurm  : http[s]://[user@]host/filename	     Use wget
-  " davurm   : dav[s]://host[:port]/path             Use cadaver/curl
   " rsyncurm : rsync://host[:port]/path              Use rsync
   " fetchurm : fetch://[user@]host[:http]/filename   Use fetch (defaults to ftp, override for http)
   " sftpurm  : sftp://[user@]host/filename  Use scp
@@ -2448,7 +2364,6 @@ fun! s:NetrwMethod(choice)
   let rcphf    = '^\(\(\h\w*\)@\)\=\(\h\w*\):\([^@]\+\)$'
   let scpurm   = '^scp://\([^/#:]\+\)\%([#:]\(\d\+\)\)\=/\(.*\)$'
   let httpurm  = '^https\=://\([^/]\{-}\)\(/.*\)\=$'
-  let davurm   = '^davs\=://\([^/]\+\)/\(.*/\)\([-_.~[:alnum:]]\+\)$'
   let rsyncurm = '^rsync://\([^/]\{-}\)/\(.*\)\=$'
   let fetchurm = '^fetch://\(\([^/]*\)@\)\=\([^/#:]\{-}\)\(:http\)\=/\(.*\)$'
   let sftpurm  = '^sftp://\([^/]\{-}\)/\(.*\)\=$'
@@ -2478,16 +2393,6 @@ fun! s:NetrwMethod(choice)
    let g:netrw_machine= substitute(a:choice,httpurm,'\1',"")
    let b:netrw_fname  = substitute(a:choice,httpurm,'\2',"")
    let b:netrw_http   = (a:choice =~ '^https:')? "https" : "http"
-
-  " Method#6: dav://hostname[:port]/..path-to-file.. {{{3
-  elseif match(a:choice,davurm) == 0
-   let b:netrw_method= 6
-   if a:choice =~ 'davs:'
-    let g:netrw_machine= 'https://'.substitute(a:choice,davurm,'\1/\2',"")
-   else
-    let g:netrw_machine= 'http://'.substitute(a:choice,davurm,'\1/\2',"")
-   endif
-   let b:netrw_fname  = substitute(a:choice,davurm,'\3',"")
 
    " Method#7: rsync://user@hostname/...path-to-file {{{3
   elseif match(a:choice,rsyncurm) == 0
