@@ -70,7 +70,6 @@ fun! netrwSettings#NetrwSettings()
 
   put =''
   put ='+ Netrw Protocol Commands'
-  put = 'let g:netrw_fetch_cmd         = '.g:netrw_fetch_cmd
   put = 'let g:netrw_ftp_cmd           = '.g:netrw_ftp_cmd
   put = 'let g:netrw_http_cmd          = '.g:netrw_http_cmd
   put = 'let g:netrw_rcp_cmd           = '.g:netrw_rcp_cmd

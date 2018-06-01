@@ -21,7 +21,7 @@ Copyright: Copyright (C) 2016 Charles E Campbell    *netrw-copyright*
 		*netrw*
 		*ftp*    *netrw-file*  *rcp*    *scp*
 		*http*   *netrw.vim*   *rsync*  *sftp*
-		*fetch*  *network*
+		*network*
 
 ==============================================================================
 1. Contents						*netrw-contents* {{{1
@@ -193,7 +193,7 @@ You may do so by placing the following two lines in your <.vimrc>: >
 3. Netrw Reference					*netrw-ref* {{{1
 
    Netrw supports several protocols in addition to scp and ftp as mentioned
-   in |netrw-start|.  These include fetch, http,... well, just look
+   in |netrw-start|.  These include http,... well, just look
    at the list in |netrw-externapp|.  Each protocol is associated with a
    variable which holds the default command supporting that protocol.
 
@@ -201,13 +201,11 @@ EXTERNAL APPLICATIONS AND PROTOCOLS			*netrw-externapp* {{{2
 
 	Protocol  Variable	       Default Value
 	--------  ----------------     -------------
-	 fetch:   *g:netrw_fetch_cmd*    = "fetch -o"   if fetch is available
 	   ftp:   *g:netrw_ftp_cmd*      = "ftp"
 	  http:   *g:netrw_http_cmd*     = "elinks"     if   elinks  is available
 	  http:   g:netrw_http_cmd     = "links"      elseif links is available
 	  http:   g:netrw_http_cmd     = "curl"       elseif curl  is available
 	  http:   g:netrw_http_cmd     = "wget"       elseif wget  is available
-          http:   g:netrw_http_cmd     = "fetch"      elseif fetch is available
 	  http:   *g:netrw_http_put_cmd* = "curl -T"
 	   rcp:   *g:netrw_rcp_cmd*      = "rcp"
 	 rsync:   *g:netrw_rsync_cmd*    = "rsync"     (see |g:netrw_rsync_sep|)
@@ -223,7 +221,6 @@ EXTERNAL APPLICATIONS AND PROTOCOLS			*netrw-externapp* {{{2
 		    links  : "-dump >"
 		    curl   : "-o"
 		    wget   : "-q -O"
-		    fetch  : "-o"
 <
 	For example, if your system has elinks, and you'd rather see the
 	page using an attempt at rendering the text, you may wish to have >
@@ -247,7 +244,6 @@ READING						*netrw-read* *netrw-nread* {{{2
 	:Nread "machine:path"				uses rcp
 	:Nread "machine path"				uses ftp w/ <.netrc>
 	:Nread "machine id password path"		uses ftp
-	:Nread "fetch://[user@]machine/path"		uses fetch
 	:Nread "ftp://[user@]machine[[:#]port]/path"	uses ftp w/ <.netrc>
 	:Nread "http://[user@]machine/path"		uses http  uses wget
 	:Nread "rcp://[user@]machine/path"		uses rcp
@@ -285,7 +281,6 @@ SOURCING					*netrw-source* {{{2
 	Netrw also provides the Nsource command:
 
 	:Nsource ?					give help
-	:Nsource "fetch://[user@]machine/path"		uses fetch
 	:Nsource "ftp://[user@]machine[[:#]port]/path"	uses ftp w/ <.netrc>
 	:Nsource "http://[user@]machine/path"		uses http  uses wget
 	:Nsource "rcp://[user@]machine/path"		uses rcp
@@ -465,10 +460,10 @@ file using root-relative paths, use the full path:
 
 Network-oriented file transfer under Vim is implemented by a VimL-based script
 (<netrw.vim>) using plugin techniques.  It currently supports both reading and
-writing across networks using rcp, scp, ftp or ftp+<.netrc>, scp, fetch,
-rsync, or sftp.
+writing across networks using rcp, scp, ftp or ftp+<.netrc>, scp, rsync, or
+sftp.
 
-http is currently supported read-only via use of wget or fetch.
+http is currently supported read-only via use of wget.
 
 <netrw.vim> is a standard plugin which acts as glue between Vim and the
 various file transfer programs.  It uses autocommand events (BufReadCmd,
@@ -523,11 +518,7 @@ See |netrw-p8| for more about putty, pscp, psftp, etc.
 Ftp, an old protocol, seems to be blessed by numerous implementations.
 Unfortunately, some implementations are noisy (ie., add junk to the end of the
 file).  Thus, concerned users may decide to write a NetReadFixup() function
-that will clean up after reading with their ftp.  Some Unix systems (ie.,
-FreeBSD) provide a utility called "fetch" which uses the ftp protocol but is
-not noisy and more convenient, actually, for <netrw.vim> to use.
-Consequently, if "fetch" is available (ie. executable), it may be preferable
-to use it for ftp://... based transfers.
+that will clean up after reading with their ftp.
 
 For rcp, scp, sftp, and http, one may use network-oriented file transfers
 transparently; ie.
@@ -571,11 +562,6 @@ additional prompting.
   +=================================+============================+============+
   |  Reading                        | Writing                    |  Uses      |
   +=================================+============================+============+
-  | FETCH:                          |                            |            |
-  |  fetch://[user@]host/path       |                            |            |
-  |  fetch://[user@]host:http/path  |  Not Available             | fetch      |
-  |  :Nread fetch://[user@]host/path|                            |            |
-  +---------------------------------+----------------------------+------------+
   | FILE:                           |                            |            |
   |  file:///*                      | file:///*                  |            |
   |  file://localhost/*             | file://localhost/*         |            |
@@ -588,9 +574,6 @@ additional prompting.
   +---------------------------------+----------------------------+------------+
   | HTTP: wget is executable: (*4)  |                            |            |
   |  http://[user@]host/path        |        Not Available       | wget       |
-  +---------------------------------+----------------------------+------------+
-  | HTTP: fetch is executable (*4)  |                            |            |
-  |  http://[user@]host/path        |        Not Available       | fetch      |
   +---------------------------------+----------------------------+------------+
   | RCP:                            |                            |            |
   |  rcp://[user@]host/path         | rcp://[user@]host/path     | rcp        |
@@ -618,8 +601,7 @@ additional prompting.
         (*3) for ftp, "machine" may be machine#port or machine:port
 	if a different port is needed than the standard ftp port
 
-	(*4) for http:..., if wget is available it will be used.  Otherwise,
-	if fetch is available it will be used.
+	(*4) for http:..., if wget is available it will be used.
 
 Both the :Nread and the :Nwrite ex-commands can accept multiple filenames.
 
@@ -826,9 +808,7 @@ variables listed below, and may be modified by the user.
 <    netrw_ftp         variable    =doesn't exist  userid set by "user userid"
                                   =0              userid set by "user userid"
                                   =1              userid set by "userid"
-    g:netrw_fetch_cmd    var   ="fetch -o"     if fetch is available
     g:netrw_ftp_cmd      var   ="ftp"
-    g:netrw_http_cmd     var   ="fetch -o"     if      fetch is available
     g:netrw_http_cmd     var   ="wget -O"      else if wget  is available
     g:netrw_http_put_cmd var   ="curl -T"
     |g:netrw_list_cmd|     var   ="ssh USEPORT HOSTNAME ls -Fa"
@@ -4047,7 +4027,6 @@ conflict with netrw or which plugin(s) is/are involved.
 14. Credits						*netrw-credits* {{{1
 
 	Vim editor	by Bram Moolenaar (Thanks, Bram!)
-	fetch		support by Bram Moolenaar and C Campbell
 	ftp		support by C Campbell <NdrOchip@ScampbellPfamily.AbizM>
 	http		support by Bram Moolenaar <bram@moolenaar.net>
 	rcp
@@ -4059,7 +4038,7 @@ conflict with netrw or which plugin(s) is/are involved.
 
 	Jérôme Augé		-- also using new buffer method with ftp+.netrc
 	Bram Moolenaar		-- obviously vim itself, :e and v:cmdarg use,
-	                           fetch,...
+	                           ...
 	Yasuhiro Matsumoto	-- pointing out undo+0r problem and a solution
 	Erik Warendorph		-- for several suggestions (g:netrw_..._cmd
 				   variables, rsync etc)

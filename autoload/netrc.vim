@@ -184,13 +184,6 @@ let g:netrw_localrmdiropt      = ""
 " Default values for netrw's global protocol variables {{{2
 call s:NetrwInit("g:netrw_use_errorwindow",1)
 
-if !exists("g:netrw_fetch_cmd")
- if executable("fetch")
-  let g:netrw_fetch_cmd	= "fetch -o"
- else
-  let g:netrw_fetch_cmd	= ""
- endif
-endif
 if !exists("g:netrw_file_cmd")
  if executable("elinks")
   call s:NetrwInit("g:netrw_file_cmd","elinks")
@@ -215,9 +208,6 @@ if !exists("g:netrw_http_cmd")
  elseif executable("elinks")
   let g:netrw_http_cmd = "elinks"
   call s:NetrwInit("g:netrw_http_xcmd","-source >")
- elseif executable("fetch")
-  let g:netrw_http_cmd	= "fetch"
-  call s:NetrwInit("g:netrw_http_xcmd","-o")
  elseif executable("links")
   let g:netrw_http_cmd = "links"
   call s:NetrwInit("g:netrw_http_xcmd","-http.extra-header ".shellescape("Accept-Encoding: identity", 1)." -source >")
@@ -1569,7 +1559,6 @@ fun! netrc#NetRead(mode,...)
      echomsg ':Nread machine:path                         uses rcp'
      echomsg ':Nread "machine path"                       uses ftp   with <.netrc>'
      echomsg ':Nread "machine id password path"           uses ftp'
-     echomsg ':Nread fetch://machine/path                 uses fetch'
      echomsg ':Nread ftp://[user@]machine[:port]/path     uses ftp   autodetects <.netrc>'
      echomsg ':Nread http://[user@]machine/path           uses http  wget'
      echomsg ':Nread file:///path           		  uses elinks'
@@ -1755,13 +1744,13 @@ fun! netrc#NetRead(mode,...)
    elseif     b:netrw_method  == 5
     if g:netrw_http_cmd == ""
      if !exists("g:netrw_quiet")
-      call netrc#ErrorMsg(s:ERROR,"neither the wget nor the fetch command is available",6)
+      call netrc#ErrorMsg(s:ERROR,"the wget command is not available",6)
      endif
      return
     endif
 
     if match(b:netrw_fname,"#") == -1 || exists("g:netrw_http_xcmd")
-     " using g:netrw_http_cmd (usually elinks, links, curl, wget, or fetch)
+     " using g:netrw_http_cmd (usually elinks, links, curl, or wget)
      if exists("g:netrw_http_xcmd")
       call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_http_cmd." ".s:ShellEscape(b:netrw_http."://".g:netrw_machine.b:netrw_fname,1)." ".g:netrw_http_xcmd." ".s:ShellEscape(tmpfile,1))
      else
@@ -1770,7 +1759,7 @@ fun! netrc#NetRead(mode,...)
      let result = s:NetrwGetFile(readcmd, tmpfile, b:netrw_method)
 
     else
-     " wget/curl/fetch plus a jump to an in-page marker (ie. http://abc/def.html#aMarker)
+     " wget/curl plus a jump to an in-page marker (ie. http://abc/def.html#aMarker)
      let netrw_html= substitute(b:netrw_fname,"#.*$","","")
      let netrw_tag = substitute(b:netrw_fname,"^.*#","","")
      call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_http_cmd." ".s:ShellEscape(tmpfile,1)." ".s:ShellEscape(b:netrw_http."://".g:netrw_machine.netrw_html,1))
@@ -1786,32 +1775,6 @@ fun! netrc#NetRead(mode,...)
     call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_rsync_cmd." ".s:ShellEscape(g:netrw_machine.g:netrw_rsync_sep.b:netrw_fname,1)." ".s:ShellEscape(tmpfile,1))
     let result		 = s:NetrwGetFile(readcmd,tmpfile, b:netrw_method)
     let b:netrw_lastfile = choice
-
-   ".........................................
-   " NetRead: (fetch) NetRead Method #8 {{{3
-   "    fetch://[user@]host[:http]/path
-   elseif     b:netrw_method  == 8
-    if g:netrw_fetch_cmd == ""
-     if !exists("g:netrw_quiet")
-      NetrwKeepj call netrc#ErrorMsg(s:ERROR,"fetch command not available",7)
-     endif
-     return
-    endif
-    if exists("g:netrw_option") && g:netrw_option =~ ":https\="
-     let netrw_option= "http"
-    else
-     let netrw_option= "ftp"
-    endif
-
-    if exists("g:netrw_uid") && g:netrw_uid != "" && exists("s:netrw_passwd") && s:netrw_passwd != ""
-     call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_fetch_cmd." ".s:ShellEscape(tmpfile,1)." ".s:ShellEscape(netrw_option."://".g:netrw_uid.':'.s:netrw_passwd.'@'.g:netrw_machine."/".b:netrw_fname,1))
-    else
-     call s:NetrwExe(s:netrw_silentxfer."!".g:netrw_fetch_cmd." ".s:ShellEscape(tmpfile,1)." ".s:ShellEscape(netrw_option."://".g:netrw_machine."/".b:netrw_fname,1))
-    endif
-
-    let result		= s:NetrwGetFile(readcmd,tmpfile, b:netrw_method)
-    let b:netrw_lastfile = choice
-    setl ro nomod
 
    ".........................................
    " NetRead: (sftp) NetRead Method #9 {{{3
@@ -1902,7 +1865,6 @@ fun! netrc#NetWrite(...) range
      echomsg ':Nwrite machine:path                        uses rcp'
      echomsg ':Nwrite "machine path"                      uses ftp with <.netrc>'
      echomsg ':Nwrite "machine id password path"          uses ftp'
-     echomsg ':Nwrite fetch://[user@]machine/path         uses fetch'
      echomsg ':Nwrite ftp://machine[#port]/path           uses ftp  (autodetects <.netrc>)'
      echomsg ':Nwrite rcp://machine/path                  uses rcp'
      echomsg ':Nwrite rsync://[user@]machine/path         uses rsync'
@@ -2150,7 +2112,6 @@ fun! netrc#NetSource(...)
   if a:0 > 0 && a:1 == '?'
    " give help
    echomsg 'NetSource Usage:'
-   echomsg ':Nsource fetch://machine/path                 uses fetch'
    echomsg ':Nsource ftp://[user@]machine[:port]/path     uses ftp   autodetects <.netrc>'
    echomsg ':Nsource http[s]://[user@]machine/path        uses http  wget'
    echomsg ':Nsource rcp://[user@]machine/path            uses rcp'
@@ -2307,7 +2268,6 @@ endfun
 "	           4: scp
 "	           5: http[s] (wget)
 "	           7: rsync
-"	           8: fetch
 "	           9: sftp
 "	          10: file
 "  g:netrw_machine= hostname
@@ -2354,7 +2314,6 @@ fun! s:NetrwMethod(choice)
   " scpurm   : scp://[user@]host[[#:]port]/filename  Use scp
   " httpurm  : http[s]://[user@]host/filename	     Use wget
   " rsyncurm : rsync://host[:port]/path              Use rsync
-  " fetchurm : fetch://[user@]host[:http]/filename   Use fetch (defaults to ftp, override for http)
   " sftpurm  : sftp://[user@]host/filename  Use scp
   " fileurm  : file://[user@]host/filename	     Use elinks or links
   let mipf     = '^\(\S\+\)\s\+\(\S\+\)\s\+\(\S\+\)\s\+\(\S\+\)$'
@@ -2365,7 +2324,6 @@ fun! s:NetrwMethod(choice)
   let scpurm   = '^scp://\([^/#:]\+\)\%([#:]\(\d\+\)\)\=/\(.*\)$'
   let httpurm  = '^https\=://\([^/]\{-}\)\(/.*\)\=$'
   let rsyncurm = '^rsync://\([^/]\{-}\)/\(.*\)\=$'
-  let fetchurm = '^fetch://\(\([^/]*\)@\)\=\([^/#:]\{-}\)\(:http\)\=/\(.*\)$'
   let sftpurm  = '^sftp://\([^/]\{-}\)/\(.*\)\=$'
   let fileurm  = '^file\=://\(.*\)$'
 
@@ -2441,14 +2399,6 @@ fun! s:NetrwMethod(choice)
      let b:netrw_method= 3
     endif
    endif
-
-  " Method#8: fetch {{{3
-  elseif match(a:choice,fetchurm) == 0
-   let b:netrw_method = 8
-   let g:netrw_userid = substitute(a:choice,fetchurm,'\2',"")
-   let g:netrw_machine= substitute(a:choice,fetchurm,'\3',"")
-   let b:netrw_option = substitute(a:choice,fetchurm,'\4',"")
-   let b:netrw_fname  = substitute(a:choice,fetchurm,'\5',"")
 
    " Method#3: Issue an ftp : "machine id password [path/]filename" {{{3
   elseif match(a:choice,mipf) == 0
