@@ -242,7 +242,6 @@ let s:netrw_rcpmode    = ''
 " Default values - a-c ---------- {{{3
 call s:NetrwInit("g:netrw_alto"        , &sb)
 call s:NetrwInit("g:netrw_altv"        , &spr)
-call s:NetrwInit("g:netrw_banner"      , 1)
 call s:NetrwInit("g:netrw_browse_split", 0)
 call s:NetrwInit("g:netrw_bufsettings" , "noma nomod nonu nobl nowrap ro nornu")
 call s:NetrwInit("g:netrw_chgwin"      , -1)
@@ -475,7 +474,7 @@ if v:version >= 700 && has("balloon_eval") && has("syntax") && exists("g:syntax_
    if &ft != "netrw"
     return ""
    endif
-   if !exists("w:netrw_bannercnt") || v:beval_lnum >= w:netrw_bannercnt || (exists("g:netrw_nobeval") && g:netrw_nobeval)
+   if v:beval_lnum >= 1 || (exists("g:netrw_nobeval") && g:netrw_nobeval)
     let mesg= ""
    elseif     v:beval_text == "Netrw" || v:beval_text == "Directory" || v:beval_text == "Listing"
     let mesg = "i: thin-long-wide-tree  gh: quick hide/unhide of dot-files   qf: quick file info  %:open new file"
@@ -675,11 +674,9 @@ fun! netrc#Explore(indx,dosplit,style,...)
     endif
     call netrc#LocalBrowseCheck(dirname)
    endif
-   if exists("w:netrw_bannercnt")
     " done to handle P08-Ingelrest. :Explore will _Always_ go to the line just after the banner.
     " If one wants to return the same place in the netrw window, use :Rex instead.
-    exe w:netrw_bannercnt
-   endif
+    exe 1
 
   " starpat=1: Explore *//pattern  (current directory only search for files containing pattern)
   " starpat=2: Explore **//pattern (recursive descent search for files containing pattern)
@@ -1255,10 +1252,8 @@ fun! netrc#Nread(mode,fname)
   call winrestview(svpos)
 
   if exists("w:netrw_liststyle") && w:netrw_liststyle != s:TREELIST
-   if exists("w:netrw_bannercnt")
     " start with cursor just after the banner
-    exe w:netrw_bannercnt
-   endif
+    exe 1
   endif
 endfun
 
@@ -3016,9 +3011,6 @@ fun! s:NetrwBrowse(islocal,dirname)
   " Otherwise            : set rexposn
   if exists("s:rexposn_".bufnr("%"))
    NetrwKeepj call winrestview(s:rexposn_{bufnr('%')})
-   if exists("w:netrw_bannercnt") && line(".") < w:netrw_bannercnt
-    NetrwKeepj exe w:netrw_bannercnt
-   endif
   else
    NetrwKeepj call s:SetRexDir(a:islocal,b:netrw_curdir)
   endif
@@ -3273,35 +3265,7 @@ fun! s:NetrwGetWord()
    endif
   endif
 
-  if exists("w:netrw_bannercnt") && line(".") < w:netrw_bannercnt
-   " Active Banner support
-   NetrwKeepj norm! 0
-   let dirname= "./"
-   let curline= getline('.')
-
-   if curline =~# '"\s*Sorted by\s'
-    NetrwKeepj norm s
-    let s:netrw_skipbrowse= 1
-    echo 'Pressing "s" also works'
-
-   elseif curline =~# '"\s*Sort sequence:'
-    let s:netrw_skipbrowse= 1
-    echo 'Press "S" to edit sorting sequence'
-
-   elseif curline =~# '"\s*Quick Help:'
-    NetrwKeepj norm ?
-    let s:netrw_skipbrowse= 1
-
-   elseif curline =~# '"\s*\%(Hiding\|Showing\):'
-    NetrwKeepj norm a
-    let s:netrw_skipbrowse= 1
-    echo 'Pressing "a" also works'
-
-   elseif line("$") > w:netrw_bannercnt
-    exe 'sil NetrwKeepj '.w:netrw_bannercnt
-   endif
-
-  elseif w:netrw_liststyle == s:THINLIST
+  if w:netrw_liststyle == s:THINLIST
    NetrwKeepj norm! 0
    let dirname= substitute(getline('.'),'\t -->.*$','','')
 
@@ -3318,7 +3282,7 @@ fun! s:NetrwGetWord()
 
    if !exists("b:netrw_cpf")
     let b:netrw_cpf= 0
-    exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g/^./if virtcol("$") > b:netrw_cpf|let b:netrw_cpf= virtcol("$")|endif'
+    exe 'sil NetrwKeepj 1,$g/^./if virtcol("$") > b:netrw_cpf|let b:netrw_cpf= virtcol("$")|endif'
     call histdel("/",-1)
    endif
 
@@ -3432,30 +3396,6 @@ fun! s:NetrwListStyle(islocal)
   NetrwKeepj call winrestview(svpos)
   let @@= ykeep
 
-endfun
-
-" ---------------------------------------------------------------------
-" s:NetrwBannerCtrl: toggles the display of the banner {{{2
-fun! s:NetrwBannerCtrl(islocal)
-
-  let ykeep= @@
-  " toggle the banner (enable/suppress)
-  let g:netrw_banner= !g:netrw_banner
-
-  " refresh the listing
-  let svpos= winsaveview()
-  call s:NetrwRefresh(a:islocal,s:NetrwBrowseChgDir(a:islocal,'./'))
-
-  " keep cursor on the filename
-  if g:netrw_banner && exists("w:netrw_bannercnt") && line(".") >= w:netrw_bannercnt
-   let fname= s:NetrwGetWord()
-   sil NetrwKeepj $
-   let result= search('\%(^\%(|\+\s\)\=\|\s\{2,}\)\zs'.escape(fname,'.\[]*$^').'\%(\s\{2,}\|$\)','bc')
-   if result <= 0 && exists("w:netrw_bannercnt")
-    exe "NetrwKeepj ".w:netrw_bannercnt
-   endif
-  endif
-  let @@= ykeep
 endfun
 
 " ---------------------------------------------------------------------
@@ -3607,19 +3547,6 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
   let newdir    = a:newdir
   let dolockout = 0
   let dorestore = 1
-
-  " ignore <cr>s when done in the banner
-  if g:netrw_banner
-   if exists("w:netrw_bannercnt") && line(".") < w:netrw_bannercnt && line("$") >= w:netrw_bannercnt
-    if getline(".") =~# 'Quick Help'
-     let g:netrw_quickhelp= (g:netrw_quickhelp + 1)%len(s:QuickHelp)
-     setl ma noro nowrap
-     NetrwKeepj call setline(line('.'),'"   Quick Help: <F1>:help  '.s:QuickHelp[g:netrw_quickhelp])
-     setl noma nomod nowrap
-     NetrwKeepj call s:NetrwOptionRestore("s:")
-    endif
-   endif
-  endif
 
   " set up o/s-dependent directory recognition pattern
   let dirpat= '[\/]$'
@@ -3866,14 +3793,6 @@ endfun
 "    for thin, long, and wide: cursor placed just after banner
 "    for tree, keeps cursor on current filename
 fun! s:NetrwBrowseUpDir(islocal)
-  if exists("w:netrw_bannercnt") && line(".") < w:netrw_bannercnt-1
-   " this test needed because occasionally this function seems to be incorrectly called
-   " when multiple leftmouse clicks are taken when atop the one line help in the banner.
-   " I'm allowing the very bottom line to permit a "-" exit so that one may escape empty
-   " directories.
-   return
-  endif
-
   norm! 0
   if exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST && exists("w:netrw_treedict")
    let curline= getline(".")
@@ -4630,14 +4549,14 @@ fun! s:NetrwListHide()
 
    " Prune the list by hiding any files which match
    if g:netrw_hide == 1
-    exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$g'.sep.hide.sep.'d'
+    exe 'sil! NetrwKeepj 1,$g'.sep.hide.sep.'d'
    elseif g:netrw_hide == 2
-    exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$g'.sep.hide.sep.'s@^@ /-KEEP-/ @'
+    exe 'sil! NetrwKeepj 1,$g'.sep.hide.sep.'s@^@ /-KEEP-/ @'
    endif
   endwhile
   if g:netrw_hide == 2
-   exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$v@^ /-KEEP-/ @d'
-   exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s@^\%( /-KEEP-/ \)\+@@e'
+   exe 'sil! NetrwKeepj 1,$v@^ /-KEEP-/ @d'
+   exe 'sil! NetrwKeepj 1,$s@^\%( /-KEEP-/ \)\+@@e'
   endif
 
   " remove any blank lines that have somehow remained.
@@ -4770,7 +4689,7 @@ fun! s:TreeSqueezeDir(islocal)
   if exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST && exists("w:netrw_treedict")
    " its a tree-listing style
    let curdepth = substitute(getline('.'),'^\(\%('.s:treedepthstring.'\)*\)[^'.s:treedepthstring.'].\{-}$','\1','e')
-   let stopline = (exists("w:netrw_bannercnt")? (w:netrw_bannercnt + 1) : 1)
+   let stopline = 2
    let depth    = strchars(substitute(curdepth,' ','','g'))
    let srch     = -1
    if depth >= 2
@@ -4820,7 +4739,6 @@ fun! s:NetrwMaps(islocal)
    nnoremap <buffer> <silent> <nowait> gh	:<c-u>call <SID>NetrwHidden(1)<cr>
    nnoremap <buffer> <silent> <nowait> gn	:<c-u>call netrc#SetTreetop(<SID>NetrwGetWord())<cr>
    nnoremap <buffer> <silent> <nowait> gp	:<c-u>call <SID>NetrwChgPerm(1,b:netrw_curdir)<cr>
-   nnoremap <buffer> <silent> <nowait> I	:<c-u>call <SID>NetrwBannerCtrl(1)<cr>
    nnoremap <buffer> <silent> <nowait> i	:<c-u>call <SID>NetrwListStyle(1)<cr>
    nnoremap <buffer> <silent> <nowait> ma	:<c-u>call <SID>NetrwMarkFileArgList(1,0)<cr>
    nnoremap <buffer> <silent> <nowait> mA	:<c-u>call <SID>NetrwMarkFileArgList(1,1)<cr>
@@ -4927,7 +4845,6 @@ fun! s:NetrwMaps(islocal)
    nnoremap <buffer> <silent> <nowait> gf	:<c-u>call <SID>NetrwForceFile(0,<SID>NetrwGetWord())<cr>
    nnoremap <buffer> <silent> <nowait> gh	:<c-u>call <SID>NetrwHidden(0)<cr>
    nnoremap <buffer> <silent> <nowait> gp	:<c-u>call <SID>NetrwChgPerm(0,b:netrw_curdir)<cr>
-   nnoremap <buffer> <silent> <nowait> I	:<c-u>call <SID>NetrwBannerCtrl(1)<cr>
    nnoremap <buffer> <silent> <nowait> i	:<c-u>call <SID>NetrwListStyle(0)<cr>
    nnoremap <buffer> <silent> <nowait> ma	:<c-u>call <SID>NetrwMarkFileArgList(0,0)<cr>
    nnoremap <buffer> <silent> <nowait> mA	:<c-u>call <SID>NetrwMarkFileArgList(0,1)<cr>
@@ -6146,26 +6063,8 @@ fun! s:NetrwMarkFileTgt(islocal)
   let svpos  = winsaveview()
   let curdir = s:NetrwGetCurdir(a:islocal)
   let hadtgt = exists("s:netrwmftgt")
-  if !exists("w:netrw_bannercnt")
-   let w:netrw_bannercnt= b:netrw_bannercnt
-  endif
 
   " set up target
-  if line(".") < w:netrw_bannercnt
-   " if cursor in banner region, use b:netrw_curdir for the target unless its already the target
-   if exists("s:netrwmftgt") && exists("s:netrwmftgt_islocal") && s:netrwmftgt == b:netrw_curdir
-    unlet s:netrwmftgt s:netrwmftgt_islocal
-    if g:netrw_fastbrowse <= 1
-     call s:LocalBrowseRefresh()
-    endif
-    call s:NetrwRefresh(a:islocal,s:NetrwBrowseChgDir(a:islocal,'./'))
-    call winrestview(svpos)
-    return
-   else
-    let s:netrwmftgt= b:netrw_curdir
-   endif
-
-  else
    " get word under cursor.
    "  * If directory, use it for the target.
    "  * If file, use b:netrw_curdir for the target
@@ -6178,7 +6077,6 @@ fun! s:NetrwMarkFileTgt(islocal)
    else
     let s:netrwmftgt = curdir
    endif
-  endif
   if a:islocal
    " simplify the target (eg. /abc/def/../ghi -> /abc/ghi)
    let s:netrwmftgt= simplify(s:netrwmftgt)
@@ -6936,24 +6834,24 @@ fun! s:NetrwSetSort()
    endif
 
    " sanity check
-   if w:netrw_bannercnt > line("$")
+   if line("$") < 1
     " apparently no files were left after a Hiding pattern was used
     return
    endif
    if seq == '*'
     let starpriority= spriority
    else
-    exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g/'.seq.'/s/^/'.spriority.'/'
+    exe 'sil NetrwKeepj 1,$g/'.seq.'/s/^/'.spriority.'/'
     call histdel("/",-1)
     " sometimes multiple sorting patterns will match the same file or directory.
     " The following substitute is intended to remove the excess matches.
-    exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g/^\d\{3}'.g:netrw_sepchr.'\d\{3}\//s/^\d\{3}'.g:netrw_sepchr.'\(\d\{3}\/\).\@=/\1/e'
+    exe 'sil NetrwKeepj 1,$g/^\d\{3}'.g:netrw_sepchr.'\d\{3}\//s/^\d\{3}'.g:netrw_sepchr.'\(\d\{3}\/\).\@=/\1/e'
     NetrwKeepj call histdel("/",-1)
    endif
    let priority = priority + 1
   endwhile
   if exists("starpriority")
-   exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$v/^\d\{3}'.g:netrw_sepchr.'/s/^/'.starpriority.'/e'
+   exe 'sil NetrwKeepj 1,$v/^\d\{3}'.g:netrw_sepchr.'/s/^/'.starpriority.'/e'
    NetrwKeepj call histdel("/",-1)
   endif
 
@@ -6963,7 +6861,7 @@ fun! s:NetrwSetSort()
   " priority pattern needs to be retained.  So, at this point, these excess
   " priority prefixes need to be removed, but not directories that happen to
   " be just digits themselves.
-  exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$s/^\(\d\{3}'.g:netrw_sepchr.'\)\%(\d\{3}'.g:netrw_sepchr.'\)\+\ze./\1/e'
+  exe 'sil NetrwKeepj 1,$s/^\(\d\{3}'.g:netrw_sepchr.'\)\%(\d\{3}'.g:netrw_sepchr.'\)\+\ze./\1/e'
   NetrwKeepj call histdel("/",-1)
   let @@= ykeep
 
@@ -7352,12 +7250,12 @@ fun! s:NetrwTreeListing(dirname)
    endif
 
    " update the dictionary for the current directory
-   exe "sil! NetrwKeepj ".w:netrw_bannercnt.',$g@^\.\.\=/$@d _'
-   let w:netrw_treedict[a:dirname]= getline(w:netrw_bannercnt,line("$"))
-   exe "sil! NetrwKeepj ".w:netrw_bannercnt.",$d _"
+   exe 'sil! NetrwKeepj 1,$g@^\.\.\=/$@d _'
+   let w:netrw_treedict[a:dirname]= getline(1,line("$"))
+   exe "sil! NetrwKeepj 1,$d _"
 
    " if past banner, record word
-   if exists("w:netrw_bannercnt") && line(".") > w:netrw_bannercnt
+   if line(".") > 1
     let fname= expand("<cword>")
    else
     let fname= ""
@@ -7383,7 +7281,7 @@ endfun
 "                  user of the function ( netrc#SetTreetop() )
 "                  wipes that out prior to calling this function
 fun! s:NetrwTreePath(treetop)
-  if line(".") < w:netrw_bannercnt + 2
+  if line(".") < 3
    let treedir= a:treetop
    if treedir !~ '/$'
     let treedir= treedir.'/'
@@ -7430,12 +7328,8 @@ fun! s:NetrwWideListing()
    " fpc: filenames per column
    setl ma noro
    let b:netrw_cpf= 0
-   if line("$") >= w:netrw_bannercnt
-    exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g/^./if virtcol("$") > b:netrw_cpf|let b:netrw_cpf= virtcol("$")|endif'
+    exe 'sil NetrwKeepj 1,$g/^./if virtcol("$") > b:netrw_cpf|let b:netrw_cpf= virtcol("$")|endif'
     NetrwKeepj call histdel("/",-1)
-   else
-    return
-   endif
    let b:netrw_cpf= b:netrw_cpf + 2
 
    " determine qty files per line (fpl)
@@ -7446,10 +7340,10 @@ fun! s:NetrwWideListing()
 
    " make wide display
    "   fpc: files per column of wide listing
-   exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$s/^.*$/\=escape(printf("%-'.b:netrw_cpf.'S",submatch(0)),"\\")/'
+   exe 'sil NetrwKeepj 1,$s/^.*$/\=escape(printf("%-'.b:netrw_cpf.'S",submatch(0)),"\\")/'
    NetrwKeepj call histdel("/",-1)
-   let fpc         = (line("$") - w:netrw_bannercnt + w:netrw_fpl)/w:netrw_fpl
-   let newcolstart = w:netrw_bannercnt + fpc
+   let fpc         = (line("$") - 1 + w:netrw_fpl)/w:netrw_fpl
+   let newcolstart = 1 + fpc
    let newcolend   = newcolstart + fpc - 1
    if has("clipboard")
     sil! let keepregstar = @*
@@ -7460,18 +7354,18 @@ fun! s:NetrwWideListing()
     let newcolqty= newcolend - newcolstart
     exe newcolstart
     if newcolqty == 0
-     exe "sil! NetrwKeepj norm! 0\<c-v>$hx".w:netrw_bannercnt."G$p"
+     exe "sil! NetrwKeepj norm! 0\<c-v>$hx1G$p"
     else
-     exe "sil! NetrwKeepj norm! 0\<c-v>".newcolqty.'j$hx'.w:netrw_bannercnt.'G$p'
+     exe "sil! NetrwKeepj norm! 0\<c-v>".newcolqty.'j$hx1G$p'
     endif
     exe "sil! NetrwKeepj ".newcolstart.','.newcolend.'d _'
-    exe 'sil! NetrwKeepj '.w:netrw_bannercnt
+    exe 'sil! NetrwKeepj 1'
    endwhile
    if has("clipboard")
     sil! let @*= keepregstar
     sil! let @+= keepregplus
    endif
-   exe "sil! NetrwKeepj ".w:netrw_bannercnt.',$s/\s\+$//e'
+   exe 'sil! NetrwKeepj 1,$s/\s\+$//e'
    NetrwKeepj call histdel("/",-1)
    exe 'nno <buffer> <silent> w	:call search(''^.\\|\s\s\zs\S'',''W'')'."\<cr>"
    exe 'nno <buffer> <silent> b	:call search(''^.\\|\s\s\zs\S'',''bW'')'."\<cr>"
@@ -7506,90 +7400,11 @@ fun! s:PerformListing(islocal)
   " save current directory on directory history list
   NetrwKeepj call s:NetrwBookHistHandler(3,b:netrw_curdir)
 
-  " Set up the banner {{{3
-  if g:netrw_banner
-   NetrwKeepj call setline(1,'" ============================================================================')
-   if exists("g:netrw_pchk")
-    " this undocumented option allows pchk to run with different versions of netrw without causing spurious
-    " failure detections.
-    NetrwKeepj call setline(2,'" Netrw Directory Listing')
-   else
-    NetrwKeepj call setline(2,'" Netrw Directory Listing                                        (netrw '.g:loaded_rc_netrw.')')
-   endif
-   if exists("g:netrw_pchk")
-    let curdir= substitute(b:netrw_curdir,expand("$HOME"),'~','')
-   else
-    let curdir= b:netrw_curdir
-   endif
-   if exists("g:netrw_bannerbackslash") && g:netrw_bannerbackslash
-    NetrwKeepj call setline(3,'"   '.substitute(curdir,'/','\\','g'))
-   else
-    NetrwKeepj call setline(3,'"   '.curdir)
-   endif
-   let w:netrw_bannercnt= 3
-   NetrwKeepj exe "sil! NetrwKeepj ".w:netrw_bannercnt
-  else
-   NetrwKeepj 1
-   let w:netrw_bannercnt= 1
-  endif
+  NetrwKeepj 1
 
   let sortby= g:netrw_sort_by
   if g:netrw_sort_direction =~# "^r"
    let sortby= sortby." reversed"
-  endif
-
-  " Sorted by... {{{3
-  if g:netrw_banner
-   if g:netrw_sort_by =~# "^n"
-    " sorted by name
-    NetrwKeepj put ='\"   Sorted by      '.sortby
-    NetrwKeepj put ='\"   Sort sequence: '.g:netrw_sort_sequence
-    let w:netrw_bannercnt= w:netrw_bannercnt + 2
-   else
-    " sorted by size or date
-    NetrwKeepj put ='\"   Sorted by '.sortby
-    let w:netrw_bannercnt= w:netrw_bannercnt + 1
-   endif
-   exe "sil! NetrwKeepj ".w:netrw_bannercnt
-  endif
-
-  " show copy/move target, if any {{{3
-  if g:netrw_banner
-   if exists("s:netrwmftgt") && exists("s:netrwmftgt_islocal")
-    NetrwKeepj put =''
-    if s:netrwmftgt_islocal
-     sil! NetrwKeepj call setline(line("."),'"   Copy/Move Tgt: '.s:netrwmftgt.' (local)')
-    else
-     sil! NetrwKeepj call setline(line("."),'"   Copy/Move Tgt: '.s:netrwmftgt.' (remote)')
-    endif
-    let w:netrw_bannercnt= w:netrw_bannercnt + 1
-   else
-   endif
-   exe "sil! NetrwKeepj ".w:netrw_bannercnt
-  endif
-
-  " Hiding...  -or-  Showing... {{{3
-  if g:netrw_banner
-   if g:netrw_list_hide != "" && g:netrw_hide
-    if g:netrw_hide == 1
-     NetrwKeepj put ='\"   Hiding:        '.g:netrw_list_hide
-    else
-     NetrwKeepj put ='\"   Showing:       '.g:netrw_list_hide
-    endif
-    let w:netrw_bannercnt= w:netrw_bannercnt + 1
-   endif
-   exe "NetrwKeepj ".w:netrw_bannercnt
-
-   let quickhelp   = g:netrw_quickhelp%len(s:QuickHelp)
-   NetrwKeepj put ='\"   Quick Help: <F1>:help  '.s:QuickHelp[quickhelp]
-   NetrwKeepj put ='\" =============================================================================='
-   let w:netrw_bannercnt= w:netrw_bannercnt + 2
-  endif
-
-  " bannercnt should index the line just after the banner
-  if g:netrw_banner
-   let w:netrw_bannercnt= w:netrw_bannercnt + 1
-   exe "sil! NetrwKeepj ".w:netrw_bannercnt
   endif
 
   " get list of files
@@ -7603,72 +7418,52 @@ fun! s:PerformListing(islocal)
   endif
 
   " manipulate the directory listing (hide, sort) {{{3
-  if !exists("w:netrw_bannercnt")
-   let w:netrw_bannercnt= 0
-  endif
-
-  if !g:netrw_banner || line("$") >= w:netrw_bannercnt
    if g:netrw_hide && g:netrw_list_hide != ""
     NetrwKeepj call s:NetrwListHide()
    endif
-   if !g:netrw_banner || line("$") >= w:netrw_bannercnt
 
     if g:netrw_sort_by =~# "^n"
      " sort by name
      NetrwKeepj call s:NetrwSetSort()
 
-     if !g:netrw_banner || w:netrw_bannercnt < line("$")
       if g:netrw_sort_direction =~# 'n'
        " normal direction sorting
-       exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$sort'.' '.g:netrw_sort_options
+       exe 'sil NetrwKeepj 1,$sort'.' '.g:netrw_sort_options
       else
        " reverse direction sorting
-       exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$sort!'.' '.g:netrw_sort_options
+       exe 'sil NetrwKeepj 1,$sort!'.' '.g:netrw_sort_options
       endif
-     endif
      " remove priority pattern prefix
-     exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s/^\d\{3}'.g:netrw_sepchr.'//e'
+     exe 'sil! NetrwKeepj 1,$s/^\d\{3}'.g:netrw_sepchr.'//e'
      NetrwKeepj call histdel("/",-1)
 
     elseif g:netrw_sort_by =~# "^ext"
      " sort by extension
-     exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$g+/+s/^/001'.g:netrw_sepchr.'/'
+     exe 'sil NetrwKeepj 1,$g+/+s/^/001'.g:netrw_sepchr.'/'
      NetrwKeepj call histdel("/",-1)
-     exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$v+[./]+s/^/002'.g:netrw_sepchr.'/'
+     exe 'sil NetrwKeepj 1,$v+[./]+s/^/002'.g:netrw_sepchr.'/'
      NetrwKeepj call histdel("/",-1)
-     exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$v+['.g:netrw_sepchr.'/]+s/^\(.*\.\)\(.\{-\}\)$/\2'.g:netrw_sepchr.'&/e'
+     exe 'sil NetrwKeepj 1,$v+['.g:netrw_sepchr.'/]+s/^\(.*\.\)\(.\{-\}\)$/\2'.g:netrw_sepchr.'&/e'
      NetrwKeepj call histdel("/",-1)
-     if !g:netrw_banner || w:netrw_bannercnt < line("$")
       if g:netrw_sort_direction =~# 'n'
        " normal direction sorting
-       exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$sort'.' '.g:netrw_sort_options
+       exe 'sil NetrwKeepj 1,$sort'.' '.g:netrw_sort_options
       else
        " reverse direction sorting
-       exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$sort!'.' '.g:netrw_sort_options
+       exe 'sil NetrwKeepj 1,$sort!'.' '.g:netrw_sort_options
       endif
-     endif
-     exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s/^.\{-}'.g:netrw_sepchr.'//e'
+     exe 'sil! NetrwKeepj 1,$s/^.\{-}'.g:netrw_sepchr.'//e'
      NetrwKeepj call histdel("/",-1)
 
     elseif a:islocal
-     if !g:netrw_banner || w:netrw_bannercnt < line("$")
       if g:netrw_sort_direction =~# 'n'
-       exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$sort'.' '.g:netrw_sort_options
+       exe 'sil! NetrwKeepj 1,$sort'.' '.g:netrw_sort_options
       else
-       exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$sort!'.' '.g:netrw_sort_options
+       exe 'sil! NetrwKeepj 1,$sort!'.' '.g:netrw_sort_options
       endif
-     exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s/^\d\{-}\///e'
+     exe 'sil! NetrwKeepj 1,$s/^\d\{-}\///e'
      NetrwKeepj call histdel("/",-1)
-     endif
     endif
-
-   elseif g:netrw_sort_direction =~# 'r'
-    if !g:netrw_banner || w:netrw_bannercnt < line('$')
-     exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$g/^/m '.w:netrw_bannercnt
-     call histdel("/",-1)
-    endif
-   endif
-  endif
 
   " convert to wide/tree listing {{{3
   NetrwKeepj call s:NetrwWideListing()
@@ -7679,12 +7474,9 @@ fun! s:PerformListing(islocal)
    g/@$/call s:ShowLink()
   endif
 
-  if exists("w:netrw_bannercnt") && (line("$") >= w:netrw_bannercnt || !g:netrw_banner)
    " place cursor on the top-left corner of the file listing
-   exe 'sil! '.w:netrw_bannercnt
+   exe 'sil! 1'
    sil! NetrwKeepj norm! 0
-  else
-  endif
 
   " record previous current directory
   let w:netrw_prvdir= b:netrw_curdir
@@ -7770,8 +7562,7 @@ fun! s:NetrwRemoteFtpCmd(path,listcmd)
   setl ma ff=unix noro
 
   " clear off any older non-banner lines	" {{{3
-  " note that w:netrw_bannercnt indexes the line after the banner
-  exe "sil! NetrwKeepj ".w:netrw_bannercnt.",$d _"
+  exe "sil! NetrwKeepj 1,$d _"
 
   ".........................................
   if w:netrw_method == 2 || w:netrw_method == 5	" {{{3
@@ -7784,9 +7575,9 @@ fun! s:NetrwRemoteFtpCmd(path,listcmd)
    endif
    NetrwKeepj call setline(line("$")+1,a:listcmd)
    if exists("g:netrw_port") && g:netrw_port != ""
-    exe s:netrw_silentxfer." NetrwKeepj ".w:netrw_bannercnt.",$!".s:netrw_ftp_cmd." -i ".s:ShellEscape(g:netrw_machine,1)." ".s:ShellEscape(g:netrw_port,1)
+    exe s:netrw_silentxfer." NetrwKeepj 1,$!".s:netrw_ftp_cmd." -i ".s:ShellEscape(g:netrw_machine,1)." ".s:ShellEscape(g:netrw_port,1)
    else
-    exe s:netrw_silentxfer." NetrwKeepj ".w:netrw_bannercnt.",$!".s:netrw_ftp_cmd." -i ".s:ShellEscape(g:netrw_machine,1)
+    exe s:netrw_silentxfer." NetrwKeepj 1,$!".s:netrw_ftp_cmd." -i ".s:ShellEscape(g:netrw_machine,1)
    endif
 
   ".........................................
@@ -7827,9 +7618,7 @@ fun! s:NetrwRemoteFtpCmd(path,listcmd)
    " -i       : turns off interactive prompting from ftp
    " -n  unix : DON'T use <.netrc>, even though it exists
    " -n  win32: quit being obnoxious about password
-   if exists("w:netrw_bannercnt")
-    call s:NetrwExe(s:netrw_silentxfer.w:netrw_bannercnt.",$!".s:netrw_ftp_cmd." ".g:netrw_ftp_options)
-   endif
+    call s:NetrwExe(s:netrw_silentxfer."1,$!".s:netrw_ftp_cmd." ".g:netrw_ftp_options)
 
   ".........................................
   elseif w:netrw_method == 9	" {{{3
@@ -7854,18 +7643,18 @@ fun! s:NetrwRemoteFtpCmd(path,listcmd)
    NetrwKeepj call histdel("/",-1)
    NetrwKeepj call histdel("/",-1)
    if w:netrw_liststyle == s:THINLIST || w:netrw_liststyle == s:WIDELIST || (exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST)
-    exe "sil! NetrwKeepj ".w:netrw_bannercnt.',$s/^\%(\S\+\s\+\)\{8}//e'
+    exe 'sil! NetrwKeepj 1,$s/^\%(\S\+\s\+\)\{8}//e'
     NetrwKeepj call histdel("/",-1)
    endif
   endif
 
   " ftp's listing doesn't seem to include ./ or ../ " {{{3
   if !search('^\.\/$\|\s\.\/$','wn')
-   exe 'NetrwKeepj '.w:netrw_bannercnt
+   exe 'NetrwKeepj 1'
    NetrwKeepj put ='./'
   endif
   if !search('^\.\.\/$\|\s\.\.\/$','wn')
-   exe 'NetrwKeepj '.w:netrw_bannercnt
+   exe 'NetrwKeepj 1'
    NetrwKeepj put ='../'
   endif
 
@@ -7876,13 +7665,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:NetrwRemoteListing: {{{2
 fun! s:NetrwRemoteListing()
-
-  if !exists("w:netrw_bannercnt") && exists("s:bannercnt")
-   let w:netrw_bannercnt= s:bannercnt
-  endif
-  if !exists("w:netrw_bannercnt") && exists("b:bannercnt")
-   let w:netrw_bannercnt= s:bannercnt
-  endif
 
   call s:RemotePathAnalysis(b:netrw_curdir)
 
@@ -7927,11 +7709,9 @@ fun! s:NetrwRemoteListing()
    " report on missing file or directory messages
    if search('[Nn]o such file or directory\|Failed to change directory')
     let mesg= getline(".")
-    if exists("w:netrw_bannercnt")
      setl ma
-     exe w:netrw_bannercnt.",$d _"
+     exe "1,$d _"
      setl noma
-    endif
     NetrwKeepj call s:NetrwOptionRestore("w:")
     call netrc#ErrorMsg(s:WARNING,mesg,96)
     return -1
@@ -7939,7 +7719,7 @@ fun! s:NetrwRemoteListing()
 
    if w:netrw_liststyle == s:THINLIST || w:netrw_liststyle == s:WIDELIST || (exists("w:netrw_liststyle") && w:netrw_liststyle == s:TREELIST)
     " shorten the listing
-    exe "sil! keepalt NetrwKeepj ".w:netrw_bannercnt
+    exe "sil! keepalt NetrwKeepj 1"
 
     " cleanup
     if g:netrw_ftp_browse_reject != ""
@@ -7951,7 +7731,7 @@ fun! s:NetrwRemoteListing()
 
     " if there's no ../ listed, then put ../ in
     let line1= line(".")
-    exe "sil! NetrwKeepj ".w:netrw_bannercnt
+    exe "sil! NetrwKeepj 1"
     let line2= search('\.\.\/\%(\s\|$\)','cnW')
     if line2 == 0
      sil! NetrwKeepj put='../'
@@ -7960,12 +7740,12 @@ fun! s:NetrwRemoteListing()
     sil! NetrwKeepj norm! 0
 
     if search('^\d\{2}-\d\{2}-\d\{2}\s','n') " M$ ftp site cleanup
-     exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s/^\d\{2}-\d\{2}-\d\{2}\s\+\d\+:\d\+[AaPp][Mm]\s\+\%(<DIR>\|\d\+\)\s\+//'
+     exe 'sil! NetrwKeepj 1,$s/^\d\{2}-\d\{2}-\d\{2}\s\+\d\+:\d\+[AaPp][Mm]\s\+\%(<DIR>\|\d\+\)\s\+//'
      NetrwKeepj call histdel("/",-1)
     else " normal ftp cleanup
-     exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s/^\(\%(\S\+\s\+\)\{7}\S\+\)\s\+\(\S.*\)$/\2/e'
-     exe "sil! NetrwKeepj ".w:netrw_bannercnt.',$g/ -> /s# -> .*/$#/#e'
-     exe "sil! NetrwKeepj ".w:netrw_bannercnt.',$g/ -> /s# -> .*$#/#e'
+     exe 'sil! NetrwKeepj 1,$s/^\(\%(\S\+\s\+\)\{7}\S\+\)\s\+\(\S.*\)$/\2/e'
+     exe 'sil! NetrwKeepj 1,$g/ -> /s# -> .*/$#/#e'
+     exe 'sil! NetrwKeepj 1,$g/ -> /s# -> .*$#/#e'
      NetrwKeepj call histdel("/",-1)
      NetrwKeepj call histdel("/",-1)
      NetrwKeepj call histdel("/",-1)
@@ -8008,7 +7788,7 @@ fun! s:NetrwRemoteListing()
 
    if s:method == "ftp"
     " cleanup
-    exe "sil! NetrwKeepj ".w:netrw_bannercnt
+    exe "sil! NetrwKeepj 1"
     while getline('.') =~# g:netrw_ftp_browse_reject
      sil! NetrwKeepj d
     endwhile
@@ -8019,7 +7799,7 @@ fun! s:NetrwRemoteListing()
     let line2= line(".")
     if line2 == 0
      if b:netrw_curdir != '/'
-      exe 'sil! NetrwKeepj '.w:netrw_bannercnt."put='../'"
+      exe "sil! NetrwKeepj 1put='../'"
      endif
     endif
     exe "sil! NetrwKeepj ".line1
@@ -8027,11 +7807,11 @@ fun! s:NetrwRemoteListing()
    endif
 
    if search('^\d\{2}-\d\{2}-\d\{2}\s','n') " M$ ftp site cleanup
-    exe 'sil! NetrwKeepj '.w:netrw_bannercnt.',$s/^\(\d\{2}-\d\{2}-\d\{2}\s\+\d\+:\d\+[AaPp][Mm]\s\+\%(<DIR>\|\d\+\)\s\+\)\(\w.*\)$/\2\t\1/'
-   elseif exists("w:netrw_bannercnt") && w:netrw_bannercnt <= line("$")
-    exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$s/ -> .*$//e'
-    exe 'sil NetrwKeepj '.w:netrw_bannercnt.',$s/^\(\%(\S\+\s\+\)\{7}\S\+\)\s\+\(\S.*\)$/\2 \t\1/e'
-    exe 'sil NetrwKeepj '.w:netrw_bannercnt
+    exe 'sil! NetrwKeepj 1,$s/^\(\d\{2}-\d\{2}-\d\{2}\s\+\d\+:\d\+[AaPp][Mm]\s\+\%(<DIR>\|\d\+\)\s\+\)\(\w.*\)$/\2\t\1/'
+   else
+    exe 'sil NetrwKeepj 1,$s/ -> .*$//e'
+    exe 'sil NetrwKeepj 1,$s/^\(\%(\S\+\s\+\)\{7}\S\+\)\s\+\(\S.*\)$/\2 \t\1/e'
+    exe 'sil NetrwKeepj 1'
     NetrwKeepj call histdel("/",-1)
     NetrwKeepj call histdel("/",-1)
     NetrwKeepj call histdel("/",-1)
@@ -8342,9 +8122,6 @@ fun! s:LocalBrowseRefresh()
   if !exists("s:netrw_browselist")
    return
   endif
-  if !exists("w:netrw_bannercnt")
-   return
-  endif
   if exists("s:netrw_events") && s:netrw_events == 1
    " s:LocalFastBrowser gets called (indirectly) from a
    let s:netrw_events= 2
@@ -8610,11 +8387,6 @@ fun! s:NetrwLocalRename(path) range
    while ctr <= a:lastline
     exe "NetrwKeepj ".ctr
 
-    " sanity checks
-    if line(".") < w:netrw_bannercnt
-     let ctr= ctr + 1
-     continue
-    endif
     let curword= s:NetrwGetWord()
     if curword == "./" || curword == "../"
      let ctr= ctr + 1
@@ -8672,11 +8444,6 @@ fun! s:NetrwLocalRm(path) range
    while ctr <= a:lastline
     exe "NetrwKeepj ".ctr
 
-    " sanity checks
-    if line(".") < w:netrw_bannercnt
-     let ctr= ctr + 1
-     continue
-    endif
     let curword= s:NetrwGetWord()
     if curword == "./" || curword == "../"
      let ctr= ctr + 1
@@ -9149,7 +8916,6 @@ endfun
 fun! s:NetrwEnew(...)
 
   " grab a function-local-variable copy of buffer variables
-  if exists("b:netrw_bannercnt")      |let netrw_bannercnt       = b:netrw_bannercnt      |endif
   if exists("b:netrw_browser_active") |let netrw_browser_active  = b:netrw_browser_active |endif
   if exists("b:netrw_cpf")            |let netrw_cpf             = b:netrw_cpf            |endif
   if exists("b:netrw_curdir")         |let netrw_curdir          = b:netrw_curdir         |endif
@@ -9177,7 +8943,6 @@ fun! s:NetrwEnew(...)
   NetrwKeepj call s:NetrwOptionSave("w:")
 
   " copy function-local-variables to buffer variable equivalents
-  if exists("netrw_bannercnt")      |let b:netrw_bannercnt       = netrw_bannercnt      |endif
   if exists("netrw_browser_active") |let b:netrw_browser_active  = netrw_browser_active |endif
   if exists("netrw_cpf")            |let b:netrw_cpf             = netrw_cpf            |endif
   if exists("netrw_curdir")         |let b:netrw_curdir          = netrw_curdir         |endif
@@ -9389,7 +9154,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:RestoreWinVars: (used by Explore() and NetrwSplit()) {{{2
 fun! s:RestoreWinVars()
-  if exists("s:bannercnt")      |let w:netrw_bannercnt       = s:bannercnt      |unlet s:bannercnt      |endif
   if exists("s:col")            |let w:netrw_col             = s:col            |unlet s:col            |endif
   if exists("s:curdir")         |let w:netrw_curdir          = s:curdir         |unlet s:curdir         |endif
   if exists("s:explore_bufnr")  |let w:netrw_explore_bufnr   = s:explore_bufnr  |unlet s:explore_bufnr  |endif
@@ -9509,7 +9273,6 @@ endfun
 " ---------------------------------------------------------------------
 " s:SaveWinVars: (used by Explore() and NetrwSplit()) {{{2
 fun! s:SaveWinVars()
-  if exists("w:netrw_bannercnt")      |let s:bannercnt       = w:netrw_bannercnt      |endif
   if exists("w:netrw_col")            |let s:col             = w:netrw_col            |endif
   if exists("w:netrw_curdir")         |let s:curdir          = w:netrw_curdir         |endif
   if exists("w:netrw_explore_bufnr")  |let s:explore_bufnr   = w:netrw_explore_bufnr  |endif
@@ -9538,7 +9301,6 @@ endfun
 "   UseBufWinVars() get around that.
 fun! s:SetBufWinVars()
   if exists("w:netrw_liststyle")      |let b:netrw_liststyle      = w:netrw_liststyle      |endif
-  if exists("w:netrw_bannercnt")      |let b:netrw_bannercnt      = w:netrw_bannercnt      |endif
   if exists("w:netrw_method")         |let b:netrw_method         = w:netrw_method         |endif
   if exists("w:netrw_prvdir")         |let b:netrw_prvdir         = w:netrw_prvdir         |endif
   if exists("w:netrw_explore_indx")   |let b:netrw_explore_indx   = w:netrw_explore_indx   |endif
@@ -9656,7 +9418,7 @@ fun! s:TreeListMove(dir)
   let curindent    = substitute(getline('.'),'^\(\%('.s:treedepthstring.'\)*\)[^'.s:treedepthstring.'].\{-}$','\1','e')
   let indentm1     = substitute(curindent,'^'.s:treedepthstring,'','')
   let treedepthchr = substitute(s:treedepthstring,' ','','g')
-  let stopline     = exists("w:netrw_bannercnt")? w:netrw_bannercnt : 1
+  let stopline     = 1
   "  COMBAK : need to handle when on a directory
   "  COMBAK : need to handle ]] and ][.  In general, needs work!!!
   if curline !~ '/$'
@@ -9697,7 +9459,6 @@ endfun
 "              Matching function to s:SetBufWinVars()
 fun! s:UseBufWinVars()
   if exists("b:netrw_liststyle")       && !exists("w:netrw_liststyle")      |let w:netrw_liststyle       = b:netrw_liststyle      |endif
-  if exists("b:netrw_bannercnt")       && !exists("w:netrw_bannercnt")      |let w:netrw_bannercnt       = b:netrw_bannercnt      |endif
   if exists("b:netrw_method")          && !exists("w:netrw_method")         |let w:netrw_method          = b:netrw_method         |endif
   if exists("b:netrw_prvdir")          && !exists("w:netrw_prvdir")         |let w:netrw_prvdir          = b:netrw_prvdir         |endif
   if exists("b:netrw_explore_indx")    && !exists("w:netrw_explore_indx")   |let w:netrw_explore_indx    = b:netrw_explore_indx   |endif

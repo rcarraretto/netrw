@@ -994,7 +994,6 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   gh	Quick hide/unhide of dot-files                       |netrw-gh|
 	   gn	Make top of tree the directory below the cursor      |netrw-gn|
 	   i	Cycle between thin, long, wide, and tree listings    |netrw-i|
-	   I	Toggle the displaying of the banner                  |netrw-I|
 	   mb	Bookmark current directory                           |netrw-mb|
 	   mc	Copy marked files to marked-file target directory    |netrw-mc|
 	   md	Apply diff to marked files (up to 3)                 |netrw-md|
@@ -1070,13 +1069,6 @@ QUICK REFERENCE: COMMANDS	*netrw-explore-cmds* *netrw-browse-cmds* {{{2
      :Sexplore[!] [dir] Split & Explore directory .............|netrw-explore|
      :Texplore[!] [dir] Tab & Explore..........................|netrw-explore|
      :Vexplore[!] [dir] Vertical Split & Explore...............|netrw-explore|
-
-
-BANNER DISPLAY						*netrw-I*
-
-One may toggle the displaying of the banner by pressing "I".
-
-Also See: |g:netrw_banner|
 
 
 BOOKMARKING A DIRECTORY		*netrw-mb* *netrw-bookmark* *netrw-bookmarks* {{{2
@@ -2451,14 +2443,6 @@ your browsing preferences.  (see also: |netrw-settings|)
   *g:netrw_altv*		change from left splitting to right splitting
 				by setting this variable (see |netrw-v|)
 				 default: =&spr          (see |'spr'|)
-
-  *g:netrw_banner*		enable/suppress the banner
-				=0: suppress the banner
-				=1: banner is enabled (default)
-
-  *g:netrw_bannerbackslash*	if this variable exists and is not zero, the
-				banner will be displayed with backslashes
-				rather than forward slashes.
 
   *g:netrw_browse_split*	when browsing, <cr> will open the file by:
 				=0: re-using the same window  (default)
@@ -4017,9 +4001,6 @@ conflict with netrw or which plugin(s) is/are involved.
 ==============================================================================
 13. Todo						*netrw-todo* {{{1
 
-07/29/09 : banner	:|g:netrw_banner| can be used to suppress the
-	   suppression	  banner.  This feature is new and experimental,
-			  so its in the process of being debugged.
 09/04/09 : "gp"		: See if it can be made to work for remote systems.
 			: See if it can be made to work with marked files.
 

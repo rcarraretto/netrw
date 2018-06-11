@@ -104,9 +104,6 @@ fun! s:LocalBrowse(dirname)
 
   if isdirectory(a:dirname)
    sil! call netrc#LocalBrowseCheck(a:dirname)
-   if exists("w:netrw_bannercnt") && line('.') < w:netrw_bannercnt
-    exe w:netrw_bannercnt
-   endif
   endif
 endfun
 

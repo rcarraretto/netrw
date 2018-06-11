@@ -101,12 +101,6 @@ fun! netrwSettings#NetrwSettings()
   endif
   put = 'let g:netrw_alto              = '.g:netrw_alto
   put = 'let g:netrw_altv              = '.g:netrw_altv
-  put = 'let g:netrw_banner            = '.g:netrw_banner
-  if exists("g:netrw_bannerbackslash")
-   put = 'let g:netrw_bannerbackslash   = '.g:netrw_bannerbackslash
-  else
-   put = '\" let g:netrw_bannerbackslash   = (not defined)'
-  endif
   put = 'let g:netrw_browse_split      = '.g:netrw_browse_split
   if exists("g:netrw_browsex_viewer")
    put = 'let g:netrw_browsex_viewer   = '.g:netrw_browsex_viewer
