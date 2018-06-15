@@ -8574,24 +8574,10 @@ fun! netrc#Call(funcname,...)
 endfun
 
 " ---------------------------------------------------------------------
-" netrc#Expose: allows UserMaps and pchk to look at otherwise script-local variables {{{2
-"               I expect this function to be used in
-"                 :PChkAssert netrc#Expose("netrwmarkfilelist")
-"               for example.
+" netrc#Expose: allows UserMaps to look at otherwise script-local variables {{{2
 fun! netrc#Expose(varname)
   if exists("s:".a:varname)
    exe "let retval= s:".a:varname
-   if exists("g:netrw_pchk")
-    if type(retval) == 3
-     let retval = copy(retval)
-     let i      = 0
-     while i < len(retval)
-      let retval[i]= substitute(retval[i],expand("$HOME"),'~','')
-      let i        = i + 1
-     endwhile
-    endif
-    return string(retval)
-   endif
   else
    let retval= "n/a"
   endif
