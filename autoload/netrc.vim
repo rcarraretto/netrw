@@ -532,10 +532,6 @@ fun! netrc#Explore(indx,dosplit,style,...)
   " will end up with backslashes here.  Solution: strip off backslashes that precede white space and
   " try Explore again.
   if a:0 > 0
-     \ ((a:1 =~ "\\\s")?                   'has backslash whitespace' : 'does not have backslash whitespace').', '.
-     \ ((filereadable(s:NetrwFile(a:1)))?  'is readable'              : 'is not readable').', '.
-     \ ((isdirectory(s:NetrwFile(a:1))))?  'is a directory'           : 'is not a directory',
-     \ '~'.expand("<slnum>"))
    if a:1 =~ "\\\s" && !filereadable(s:NetrwFile(a:1)) && !isdirectory(s:NetrwFile(a:1))
     call netrc#Explore(a:indx,a:dosplit,a:style,substitute(a:1,'\\\(\s\)','\1','g'))
     return
